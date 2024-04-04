@@ -1,10 +1,12 @@
 import AccionesBase from "@lib/AccionesBase";
+import { Tiques } from "@lib/Caverna";
 import {
   ActionRowBuilder,
   CommandInteraction,
   EmbedBuilder,
   GuildMember,
   ModalBuilder,
+  ModalSubmitInteraction,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
@@ -142,5 +144,64 @@ export default class PanelDeControl extends AccionesBase {
       );
 
     await interaccion.showModal(modal);
+  }
+
+  public static async editarTiques(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-tiques") return;
+
+    const nuevosDatos: Tiques = {
+      idCanalDeRegistros: interaccion.fields.getTextInputValue(
+        "campo-id-canal-de-registros",
+      ),
+      idCategoria: interaccion.fields.getTextInputValue("campo-id-categoria"),
+      cantidad: null,
+    };
+
+    for (const clave in nuevosDatos) {
+      if (clave === "cantidad") continue;
+
+      const valor = nuevosDatos[clave] as string;
+
+      if (valor === "") {
+        interaccion.reply({
+          content: "Por favor, rellene todos los campos.",
+          ephemeral: true,
+        });
+
+        return;
+      }
+
+      if (valor.length < 18) {
+        interaccion.reply({
+          content: "Por favor, ingrese una ID valido.",
+          ephemeral: true,
+        });
+
+        return;
+      }
+    }
+
+    try {
+      await this.api.actualizarTiques(nuevosDatos);
+    } catch (error) {
+      interaccion.reply({
+        content: "Ocurrió un error al intentar editar los tiques.",
+        ephemeral: true,
+      });
+      this.log.error("Ocurrio un error al intentar editar los tiques.");
+      this.log.error(error);
+      return;
+    }
+
+    await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+
+    interaccion.reply({
+      content: "Los tiques han sido actualizados",
+      ephemeral: true,
+    });
   }
 }

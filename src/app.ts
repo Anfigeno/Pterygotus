@@ -25,5 +25,7 @@ cliente.on("interactionCreate", async (interaccion) => {
     await PanelDeControl.crearPanelDeControl(interaccion);
   } else if (interaccion.isStringSelectMenu()) {
     await PanelDeControl.modalEditarTiques(interaccion);
+  } else if (interaccion.isModalSubmit()) {
+    await PanelDeControl.editarTiques(interaccion);
   }
 });
