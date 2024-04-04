@@ -176,7 +176,7 @@ export default class Caverna {
   public async actualizarTiques(nuevosDatos: Tiques): Promise<void> {
     const url = `${this.urlApi}/tiques`;
 
-    await fetch(url, {
+    const respuesta = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -185,21 +185,28 @@ export default class Caverna {
       body: JSON.stringify({
         id_canal_registros: nuevosDatos.idCanalDeRegistros,
         id_categoria: nuevosDatos.idCategoria,
-        cantidad: nuevosDatos.cantidad,
       }),
     });
+
+    if (!respuesta.ok) {
+      throw new Error(JSON.stringify(await respuesta.json()));
+    }
   }
 
   public async actualizarCantidadTiques(): Promise<void> {
     const url = `${this.urlApi}/tiques/cantidad`;
 
-    await fetch(url, {
+    const respuesta = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Autorizacion: this.tokenApi,
       },
     });
+
+    if (!respuesta.ok) {
+      throw new Error(JSON.stringify(await respuesta.json()));
+    }
   }
 
   public async actualizarRolesDeAdministracion(
@@ -207,7 +214,7 @@ export default class Caverna {
   ): Promise<void> {
     const url = `${this.urlApi}/roles_administracion`;
 
-    await fetch(url, {
+    const respuesta = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -221,12 +228,16 @@ export default class Caverna {
         id_interno: nuevosDatos.idInterno,
       }),
     });
+
+    if (!respuesta.ok) {
+      throw new Error(JSON.stringify(await respuesta.json()));
+    }
   }
 
   public async actualizarEmbeds(nuevosDatos: Embeds): Promise<void> {
     const url = `${this.urlApi}/embeds`;
 
-    await fetch(url, {
+    const respuesta = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -237,6 +248,10 @@ export default class Caverna {
         url_imagen_limitadora: nuevosDatos.urlImaginLimitadora,
       }),
     });
+
+    if (!respuesta.ok) {
+      throw new Error(JSON.stringify(await respuesta.json()));
+    }
   }
 
   public async actualizarCanalesDeRegistros(
@@ -244,7 +259,7 @@ export default class Caverna {
   ): Promise<void> {
     const url = `${this.urlApi}/canales_registros`;
 
-    await fetch(url, {
+    const respuesta = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -258,16 +273,20 @@ export default class Caverna {
         id_servidor: nuevosDatos.idServidor,
       }),
     });
+
+    if (!respuesta.ok) {
+      throw new Error(JSON.stringify(await respuesta.json()));
+    }
   }
 }
 
-interface Tiques {
+export interface Tiques {
   idCanalDeRegistros: string | null;
   idCategoria: string | null;
   cantidad: number | null;
 }
 
-interface RolesDeAdministracion {
+export interface RolesDeAdministracion {
   idAdministrador: string | null;
   idDirector: string | null;
   idModerador: string | null;
@@ -275,12 +294,12 @@ interface RolesDeAdministracion {
   idInterno: string | null;
 }
 
-interface Embeds {
+export interface Embeds {
   color: string | null;
   urlImaginLimitadora: string | null;
 }
 
-interface CanalesDeRegistros {
+export interface CanalesDeRegistros {
   idMensajes: string | null;
   idVoz: string | null;
   idUsuarios: string | null;
