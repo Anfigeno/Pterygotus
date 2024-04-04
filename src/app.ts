@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import pino from "pino";
 import AccionesBase from "./lib/AccionesBase";
+import PanelDeControl from "@interacciones/PanelDeControl";
 
 const log = pino();
 
@@ -18,3 +19,9 @@ cliente.on("ready", () => {
 
 const token = AccionesBase.env("TOKEN_BOT");
 cliente.login(token);
+
+cliente.on("interactionCreate", async (interaccion) => {
+  if (interaccion.isCommand()) {
+    await PanelDeControl.crearPanelDeControl(interaccion);
+  }
+});

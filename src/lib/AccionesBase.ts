@@ -1,6 +1,6 @@
 import pino from "pino";
 import Caverna from "./Caverna";
-import { ColorResolvable, EmbedBuilder } from "discord.js";
+import { ColorResolvable, EmbedBuilder, GuildMember } from "discord.js";
 
 export default class AccionesBase {
   public static log = pino();
@@ -38,5 +38,9 @@ export default class AccionesBase {
     }
 
     return embed;
+  }
+
+  public static comandoAutorEsAdmin(autor: GuildMember): boolean {
+    return autor.permissions.has("Administrator");
   }
 }
