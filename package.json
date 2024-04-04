@@ -1,6 +1,6 @@
 {
   "name": "pterygotus",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Un bot de proposito general para la comunidad de Discord Caverna de la programación",
   "main": "src/app.ts",
   "type": "module",

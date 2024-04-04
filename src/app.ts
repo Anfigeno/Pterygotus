@@ -1,6 +1,6 @@
-import env from "@lib/env";
 import { Client, GatewayIntentBits } from "discord.js";
 import pino from "pino";
+import AccionesBase from "./lib/AccionesBase";
 
 const log = pino();
 
@@ -16,5 +16,5 @@ cliente.on("ready", () => {
   log.info(`Bot listo como ${cliente.user?.username}`);
 });
 
-const token = env("TOKEN_BOT");
+const token = AccionesBase.env("TOKEN_BOT");
 cliente.login(token);

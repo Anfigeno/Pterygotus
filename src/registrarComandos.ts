@@ -1,13 +1,13 @@
-import env from "@lib/env";
+import AccionesBase from "./lib/AccionesBase";
 import { REST, Routes } from "discord.js";
 import pino from "pino";
 import comandos from "./comandos";
 
 const log = pino();
 
-const tokenBot = env("TOKEN_BOT");
-const clientId = env("CLIENT_ID");
-const guildId = env("GUILD_ID");
+const tokenBot = AccionesBase.env("TOKEN_BOT");
+const clientId = AccionesBase.env("CLIENT_ID");
+const guildId = AccionesBase.env("GUILD_ID");
 
 const rest = new REST({ version: "10" }).setToken(tokenBot);
 
