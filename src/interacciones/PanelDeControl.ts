@@ -4,8 +4,12 @@ import {
   CommandInteraction,
   EmbedBuilder,
   GuildMember,
+  ModalBuilder,
   StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
 
 export default class PanelDeControl extends AccionesBase {
@@ -88,5 +92,55 @@ export default class PanelDeControl extends AccionesBase {
       );
 
     await interaccion.reply({ embeds: [embed], components: [controles] });
+  }
+
+  public static async modalEditarTiques(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+
+    const autorInteraccion = interaccion.member as GuildMember;
+    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+
+    if (interaccion.values[0] !== "editar-tiques") return;
+
+    try {
+      await this.api.obtenerTiques();
+    } catch (error) {
+      interaccion.reply({
+        content: "Ocurrió un error al ejecutar este comando.",
+      });
+
+      this.log.error(error);
+      return;
+    }
+
+    const campoIdCanalDeRegistros = new TextInputBuilder()
+      .setCustomId("campo-id-canal-de-registros")
+      .setLabel("ID del canal de registros")
+      .setValue(`${this.api.tiques.idCanalDeRegistros}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdCategoria = new TextInputBuilder()
+      .setCustomId("campo-id-categoria")
+      .setLabel("ID de la categoría")
+      .setValue(`${this.api.tiques.idCategoria}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const modal = new ModalBuilder()
+      .setTitle("🎟 Editar tiques")
+      .setCustomId("modal-editar-tiques")
+      .setComponents(
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCanalDeRegistros,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCategoria,
+        ),
+      );
+
+    await interaccion.showModal(modal);
   }
 }
