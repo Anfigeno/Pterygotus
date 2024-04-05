@@ -26,8 +26,10 @@ cliente.on("interactionCreate", async (interaccion) => {
   } else if (interaccion.isStringSelectMenu()) {
     await PanelDeControl.modalEditarTiques(interaccion);
     await PanelDeControl.modalEditarRolesDeAdministracion(interaccion);
+    await PanelDeControl.modalEditarEmbeds(interaccion);
   } else if (interaccion.isModalSubmit()) {
     await PanelDeControl.editarTiques(interaccion);
     await PanelDeControl.editarRolesDeAdministracion(interaccion);
+    await PanelDeControl.editarEmbeds(interaccion);
   }
 });

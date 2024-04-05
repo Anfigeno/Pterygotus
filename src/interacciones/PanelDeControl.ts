@@ -1,5 +1,5 @@
 import AccionesBase from "@lib/AccionesBase";
-import { RolesDeAdministracion, Tiques } from "@lib/Caverna";
+import { Embeds, RolesDeAdministracion, Tiques } from "@lib/Caverna";
 import {
   ActionRowBuilder,
   CommandInteraction,
@@ -100,11 +100,10 @@ export default class PanelDeControl extends AccionesBase {
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-tiques") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
     if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
-
-    if (interaccion.values[0] !== "editar-tiques") return;
 
     try {
       await this.api.obtenerTiques();
@@ -185,11 +184,10 @@ export default class PanelDeControl extends AccionesBase {
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-roles-de-administracion") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
     if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
-
-    if (interaccion.values[0] !== "editar-roles-de-administracion") return;
 
     await this.api.obtenerRolesDeAdministracion();
 
@@ -284,6 +282,80 @@ export default class PanelDeControl extends AccionesBase {
 
     interaccion.reply({
       content: "Los roles de administración han sido actualizados",
+      ephemeral: true,
+    });
+  }
+
+  public static async modalEditarEmbeds(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-embeds") return;
+
+    const autorInteraccion = interaccion.member as GuildMember;
+    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+
+    await this.api.obtenerEmbeds();
+
+    const campoColor = new TextInputBuilder()
+      .setCustomId("campo-color")
+      .setLabel("Color")
+      .setValue(`${this.api.embeds.color}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(7);
+
+    const campoUrlImaginLimitadora = new TextInputBuilder()
+      .setCustomId("campo-url-imagen-limitadora")
+      .setLabel("URL de la imagen limitadora")
+      .setValue(`${this.api.embeds.urlImaginLimitadora}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(255);
+
+    const modal = new ModalBuilder()
+      .setTitle("🎟 Editar embeds")
+      .setCustomId("modal-editar-embeds")
+      .setComponents(
+        new ActionRowBuilder<TextInputBuilder>().setComponents(campoColor),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoUrlImaginLimitadora,
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  public static async editarEmbeds(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-embeds") return;
+
+    const nuevosDatos: Embeds = {
+      color: interaccion.fields.getTextInputValue("campo-color"),
+      urlImaginLimitadora: interaccion.fields.getTextInputValue(
+        "campo-url-imagen-limitadora",
+      ),
+    };
+
+    try {
+      await this.api.actualizarEmbeds(nuevosDatos);
+    } catch (error) {
+      interaccion.reply({
+        content: "Ocurrio un error al intentar editar los embeds.",
+        ephemeral: true,
+      });
+
+      this.log.error("Ocurrio un error al intentar editar los embeds.");
+      this.log.error(error);
+
+      return;
+    }
+
+    await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+
+    interaccion.reply({
+      content: "Los embeds han sido actualizados",
       ephemeral: true,
     });
   }
