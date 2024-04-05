@@ -1,5 +1,10 @@
 import AccionesBase from "@lib/AccionesBase";
-import { Embeds, RolesDeAdministracion, Tiques } from "@lib/Caverna";
+import {
+  CanalesDeRegistros,
+  Embeds,
+  RolesDeAdministracion,
+  Tiques,
+} from "@lib/Caverna";
 import {
   ActionRowBuilder,
   CommandInteraction,
@@ -46,11 +51,11 @@ export default class PanelDeControl extends AccionesBase {
       },
       {
         name: "📄 Canales de registros",
-        value: `> Mensajes: <#${this.api.canalesDeRegistros.idMensajes}>
-              > Voz: <#${this.api.canalesDeRegistros.idVoz}>
-              > Usuarios: <#${this.api.canalesDeRegistros.idUsuarios}>
-              > Sanciones: <#${this.api.canalesDeRegistros.idSanciones}>
-              > Servidor: <#${this.api.canalesDeRegistros.idServidor}>`,
+        value: `> Mensajes: <#${this.api.canalesDeRegistros.idCanalMensajes}>
+              > Voz: <#${this.api.canalesDeRegistros.idCanalVoz}>
+              > Usuarios: <#${this.api.canalesDeRegistros.idCanalUsuarios}>
+              > Sanciones: <#${this.api.canalesDeRegistros.idCanalSanciones}>
+              > Servidor: <#${this.api.canalesDeRegistros.idCanalServidor}>`,
       },
     );
 
@@ -106,10 +111,12 @@ export default class PanelDeControl extends AccionesBase {
       await this.modalEditarTiques(interaccion);
       await this.modalEditarRolesDeAdministracion(interaccion);
       await this.modalEditarEmbeds(interaccion);
+      await this.modalEditarCanalesDeRegistros(interaccion);
     } else if (interaccion.isModalSubmit()) {
       await this.editarTiques(interaccion);
       await this.editarRolesDeAdministracion(interaccion);
       await this.editarEmbeds(interaccion);
+      await this.editarCanalesDeRegistros(interaccion);
     }
   }
 
@@ -373,6 +380,122 @@ export default class PanelDeControl extends AccionesBase {
 
     interaccion.reply({
       content: "Los embeds han sido actualizados",
+      ephemeral: true,
+    });
+  }
+
+  private static async modalEditarCanalesDeRegistros(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-canales-de-registros") return;
+
+    const autorInteraccion = interaccion.member as GuildMember;
+    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+
+    await this.api.obtenerCanalesDeRegistros();
+
+    const campoIdCanalMensajes = new TextInputBuilder()
+      .setCustomId("campo-id-canal-mensajes")
+      .setLabel("ID del canal de mensajes")
+      .setValue(`${this.api.canalesDeRegistros.idCanalMensajes}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdCanalVoz = new TextInputBuilder()
+      .setCustomId("campo-id-canal-voz")
+      .setLabel("ID del canal de voz")
+      .setValue(`${this.api.canalesDeRegistros.idCanalVoz}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdCanalUsuarios = new TextInputBuilder()
+      .setCustomId("campo-id-canal-usuarios")
+      .setLabel("ID del canal de usuarios")
+      .setValue(`${this.api.canalesDeRegistros.idCanalUsuarios}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdCanalSanciones = new TextInputBuilder()
+      .setCustomId("campo-id-canal-sanciones")
+      .setLabel("ID del canal de sanciones")
+      .setValue(`${this.api.canalesDeRegistros.idCanalSanciones}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdCanlaServidor = new TextInputBuilder()
+      .setCustomId("campo-id-canal-servidor")
+      .setLabel("ID del canal de servidor")
+      .setValue(`${this.api.canalesDeRegistros.idCanalServidor}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const modal = new ModalBuilder()
+      .setTitle("🎟 Editar canales de registros")
+      .setCustomId("modal-editar-canales-de-registros")
+      .setComponents(
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCanalMensajes,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdCanalVoz),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCanalUsuarios,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCanalSanciones,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdCanlaServidor,
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async editarCanalesDeRegistros(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-canales-de-registros") return;
+
+    const nuevosDatos: CanalesDeRegistros = {
+      idCanalMensajes: interaccion.fields.getTextInputValue(
+        "campo-id-canal-mensajes",
+      ),
+      idCanalVoz: interaccion.fields.getTextInputValue("campo-id-canal-voz"),
+      idCanalUsuarios: interaccion.fields.getTextInputValue(
+        "campo-id-canal-usuarios",
+      ),
+      idCanalSanciones: interaccion.fields.getTextInputValue(
+        "campo-id-canal-sanciones",
+      ),
+      idCanalServidor: interaccion.fields.getTextInputValue(
+        "campo-id-canal-servidor",
+      ),
+    };
+
+    try {
+      await this.api.actualizarCanalesDeRegistros(nuevosDatos);
+    } catch (error) {
+      interaccion.reply({
+        content:
+          "Ocurrio un error al intentar editar los canales de registros.",
+        ephemeral: true,
+      });
+
+      this.log.error(
+        "Ocurrio un error al intentar editar los canales de registros.",
+      );
+      this.log.error(error);
+
+      return;
+    }
+
+    await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+
+    interaccion.reply({
+      content: "Canales de registros editados correctamente.",
       ephemeral: true,
     });
   }

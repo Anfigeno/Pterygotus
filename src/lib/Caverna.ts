@@ -146,11 +146,11 @@ export default class Caverna {
       const datos = await respuesta.json();
 
       this.canalesDeRegistros = {
-        idMensajes: datos.id_mensajes,
-        idVoz: datos.id_voz,
-        idUsuarios: datos.id_usuarios,
-        idSanciones: datos.id_sanciones,
-        idServidor: datos.id_servidor,
+        idCanalMensajes: datos.id_canal_mensajes,
+        idCanalVoz: datos.id_canal_voz,
+        idCanalUsuarios: datos.id_canal_usuarios,
+        idCanalSanciones: datos.id_canal_sanciones,
+        idCanalServidor: datos.id_canal_servidor,
       };
     } catch (error) {
       this.log.error(error);
@@ -164,11 +164,11 @@ export default class Caverna {
       });
 
       this.canalesDeRegistros = {
-        idMensajes: null,
-        idVoz: null,
-        idUsuarios: null,
-        idSanciones: null,
-        idServidor: null,
+        idCanalMensajes: null,
+        idCanalVoz: null,
+        idCanalUsuarios: null,
+        idCanalSanciones: null,
+        idCanalServidor: null,
       };
     }
   }
@@ -266,11 +266,11 @@ export default class Caverna {
         Autorizacion: this.tokenApi,
       },
       body: JSON.stringify({
-        id_mensajes: nuevosDatos.idMensajes,
-        id_voz: nuevosDatos.idVoz,
-        id_usuarios: nuevosDatos.idUsuarios,
-        id_sanciones: nuevosDatos.idSanciones,
-        id_servidor: nuevosDatos.idServidor,
+        id_canal_mensajes: nuevosDatos.idCanalMensajes,
+        id_canal_voz: nuevosDatos.idCanalVoz,
+        id_canal_usuarios: nuevosDatos.idCanalUsuarios,
+        id_canal_sanciones: nuevosDatos.idCanalSanciones,
+        id_canal_servidor: nuevosDatos.idCanalServidor,
       }),
     });
 
@@ -300,9 +300,9 @@ export interface Embeds {
 }
 
 export interface CanalesDeRegistros {
-  idMensajes: string | null;
-  idVoz: string | null;
-  idUsuarios: string | null;
-  idSanciones: string | null;
-  idServidor: string | null;
+  idCanalMensajes: string | null;
+  idCanalVoz: string | null;
+  idCanalUsuarios: string | null;
+  idCanalSanciones: string | null;
+  idCanalServidor: string | null;
 }
