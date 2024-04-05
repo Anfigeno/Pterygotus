@@ -1,5 +1,5 @@
 import AccionesBase from "@lib/AccionesBase";
-import { Tiques } from "@lib/Caverna";
+import { RolesDeAdministracion, Tiques } from "@lib/Caverna";
 import {
   ActionRowBuilder,
   CommandInteraction,
@@ -159,30 +159,6 @@ export default class PanelDeControl extends AccionesBase {
       cantidad: null,
     };
 
-    for (const clave in nuevosDatos) {
-      if (clave === "cantidad") continue;
-
-      const valor = nuevosDatos[clave] as string;
-
-      if (valor === "") {
-        interaccion.reply({
-          content: "Por favor, rellene todos los campos.",
-          ephemeral: true,
-        });
-
-        return;
-      }
-
-      if (valor.length < 18) {
-        interaccion.reply({
-          content: "Por favor, ingrese una ID valido.",
-          ephemeral: true,
-        });
-
-        return;
-      }
-    }
-
     try {
       await this.api.actualizarTiques(nuevosDatos);
     } catch (error) {
@@ -201,6 +177,113 @@ export default class PanelDeControl extends AccionesBase {
 
     interaccion.reply({
       content: "Los tiques han sido actualizados",
+      ephemeral: true,
+    });
+  }
+
+  public static async modalEditarRolesDeAdministracion(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+
+    const autorInteraccion = interaccion.member as GuildMember;
+    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+
+    if (interaccion.values[0] !== "editar-roles-de-administracion") return;
+
+    await this.api.obtenerRolesDeAdministracion();
+
+    const campoIdAdministrador = new TextInputBuilder()
+      .setCustomId("campo-id-administrador")
+      .setLabel("ID del rol administrador")
+      .setValue(`${this.api.rolesDeAdministracion.idAdministrador}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdDirector = new TextInputBuilder()
+      .setCustomId("campo-id-director")
+      .setLabel("ID del rol director")
+      .setValue(`${this.api.rolesDeAdministracion.idDirector}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdModerador = new TextInputBuilder()
+      .setCustomId("campo-id-moderador")
+      .setLabel("ID del rol moderador")
+      .setValue(`${this.api.rolesDeAdministracion.idModerador}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdSoporte = new TextInputBuilder()
+      .setCustomId("campo-id-soporte")
+      .setLabel("ID del rol soporte")
+      .setValue(`${this.api.rolesDeAdministracion.idSoporte}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const campoIdInterno = new TextInputBuilder()
+      .setCustomId("campo-id-interno")
+      .setLabel("ID del rol interno")
+      .setValue(`${this.api.rolesDeAdministracion.idInterno}`)
+      .setStyle(TextInputStyle.Short)
+      .setMaxLength(20);
+
+    const modal = new ModalBuilder()
+      .setTitle("🎟 Editar roles de administración")
+      .setCustomId("modal-editar-roles-de-administracion")
+      .setComponents(
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdAdministrador,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdDirector),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(
+          campoIdModerador,
+        ),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdSoporte),
+        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdInterno),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  public static async editarRolesDeAdministracion(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-roles-de-administracion") return;
+
+    const nuevosDatos: RolesDeAdministracion = {
+      idAdministrador: interaccion.fields.getTextInputValue(
+        "campo-id-administrador",
+      ),
+      idDirector: interaccion.fields.getTextInputValue("campo-id-director"),
+      idModerador: interaccion.fields.getTextInputValue("campo-id-moderador"),
+      idSoporte: interaccion.fields.getTextInputValue("campo-id-soporte"),
+      idInterno: interaccion.fields.getTextInputValue("campo-id-interno"),
+    };
+
+    try {
+      await this.api.actualizarRolesDeAdministracion(nuevosDatos);
+    } catch (error) {
+      interaccion.reply({
+        content:
+          "Ocurrio un error al intentar editar los roles de administración.",
+        ephemeral: true,
+      });
+
+      this.log.error(
+        "Ocurrio un error al intentar editar los roles de administración.",
+      );
+      this.log.error(error);
+
+      return;
+    }
+
+    await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+
+    interaccion.reply({
+      content: "Los roles de administración han sido actualizados",
       ephemeral: true,
     });
   }
