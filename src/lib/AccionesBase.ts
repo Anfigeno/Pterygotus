@@ -40,7 +40,7 @@ export default class AccionesBase {
     return embed;
   }
 
-  public static comandoAutorEsAdmin(autor: GuildMember): boolean {
+  public static esAdmin(autor: GuildMember): boolean {
     return autor.permissions.has("Administrator");
   }
 }

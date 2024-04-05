@@ -68,7 +68,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.commandName !== "panel-de-control") return;
 
     const autorComando = interaccion.member as GuildMember;
-    if (!this.comandoAutorEsAdmin(autorComando)) return;
+    if (!this.esAdmin(autorComando)) return;
 
     const embed = await this.crearEmbedResumen();
 
@@ -127,7 +127,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.values[0] !== "editar-tiques") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+    if (!this.esAdmin(autorInteraccion)) return;
 
     try {
       await this.api.obtenerTiques();
@@ -211,7 +211,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.values[0] !== "editar-roles-de-administracion") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+    if (!this.esAdmin(autorInteraccion)) return;
 
     await this.api.obtenerRolesDeAdministracion();
 
@@ -317,7 +317,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.values[0] !== "editar-embeds") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+    if (!this.esAdmin(autorInteraccion)) return;
 
     await this.api.obtenerEmbeds();
 
@@ -391,7 +391,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.values[0] !== "editar-canales-de-registros") return;
 
     const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.comandoAutorEsAdmin(autorInteraccion)) return;
+    if (!this.esAdmin(autorInteraccion)) return;
 
     await this.api.obtenerCanalesDeRegistros();
 
