@@ -5,6 +5,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   GuildMember,
+  Interaction,
   ModalBuilder,
   ModalSubmitInteraction,
   StringSelectMenuBuilder,
@@ -96,7 +97,23 @@ export default class PanelDeControl extends AccionesBase {
     await interaccion.reply({ embeds: [embed], components: [controles] });
   }
 
-  public static async modalEditarTiques(
+  public static async manejarInteraccion(
+    interaccion: Interaction,
+  ): Promise<void> {
+    if (interaccion.isCommand()) {
+      await this.crearPanelDeControl(interaccion);
+    } else if (interaccion.isStringSelectMenu()) {
+      await this.modalEditarTiques(interaccion);
+      await this.modalEditarRolesDeAdministracion(interaccion);
+      await this.modalEditarEmbeds(interaccion);
+    } else if (interaccion.isModalSubmit()) {
+      await this.editarTiques(interaccion);
+      await this.editarRolesDeAdministracion(interaccion);
+      await this.editarEmbeds(interaccion);
+    }
+  }
+
+  private static async modalEditarTiques(
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
@@ -145,7 +162,7 @@ export default class PanelDeControl extends AccionesBase {
     await interaccion.showModal(modal);
   }
 
-  public static async editarTiques(
+  private static async editarTiques(
     interaccion: ModalSubmitInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-tiques") return;
@@ -180,7 +197,7 @@ export default class PanelDeControl extends AccionesBase {
     });
   }
 
-  public static async modalEditarRolesDeAdministracion(
+  private static async modalEditarRolesDeAdministracion(
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
@@ -244,7 +261,7 @@ export default class PanelDeControl extends AccionesBase {
     await interaccion.showModal(modal);
   }
 
-  public static async editarRolesDeAdministracion(
+  private static async editarRolesDeAdministracion(
     interaccion: ModalSubmitInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-roles-de-administracion") return;
@@ -286,7 +303,7 @@ export default class PanelDeControl extends AccionesBase {
     });
   }
 
-  public static async modalEditarEmbeds(
+  private static async modalEditarEmbeds(
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
@@ -324,7 +341,7 @@ export default class PanelDeControl extends AccionesBase {
     await interaccion.showModal(modal);
   }
 
-  public static async editarEmbeds(
+  private static async editarEmbeds(
     interaccion: ModalSubmitInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-embeds") return;
