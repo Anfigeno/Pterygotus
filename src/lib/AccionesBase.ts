@@ -1,6 +1,6 @@
 import pino from "pino";
 import Caverna from "./Caverna";
-import { ColorResolvable, EmbedBuilder, GuildMember } from "discord.js";
+import { ColorResolvable, EmbedBuilder, Guild, GuildMember } from "discord.js";
 
 export default class AccionesBase {
   public static log = pino();
@@ -42,5 +42,35 @@ export default class AccionesBase {
 
   public static esAdmin(autor: GuildMember): boolean {
     return autor.permissions.has("Administrator");
+  }
+
+  public static rolExiste(
+    guilg: Guild,
+    rolId: string,
+    nombre: string,
+  ): boolean {
+    const rol = guilg.roles.cache.get(rolId);
+
+    if (!rol) {
+      this.log.error(`El rol ${nombre} no existe o no es valido`);
+      return false;
+    }
+
+    return true;
+  }
+
+  public static canalExiste(
+    guilg: Guild,
+    canalId: string,
+    nombre: string,
+  ): boolean {
+    const canal = guilg.channels.cache.get(canalId);
+
+    if (!canal) {
+      this.log.error(`El canal ${nombre} no existe o no es valido`);
+      return false;
+    }
+
+    return true;
   }
 }
