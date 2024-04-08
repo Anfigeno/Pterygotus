@@ -55,7 +55,11 @@ export default class PanelDeTiques extends AccionesBase {
     embed
       .setTitle("🎟 Panel de tiques")
       .setDescription(
-        "Los tiques son canales privados que puedes crear para charlar con los miembros del personal. Un tique solo debe ser creado si es sumamente necesario, por lo que no se tolerará crear tiques por cosas insignificantes, y se les aplicará una sanción a quienes hagan mal uso de los tiques,",
+        "Los tiques son canales privados que puedes crear para charlar " +
+          "con los miembros del personal. Un tique solo debe ser creado si " +
+          "es sumamente necesario, por lo que no se tolerará crear tiques " +
+          "por cosas insignificantes, y se les aplicará una sanción a quienes " +
+          "hagan mal uso de los tiques,",
       );
 
     const opcionTiqueServicio = new StringSelectMenuOptionBuilder()
