@@ -1,8 +1,10 @@
 import AccionesBase from "@lib/AccionesBase";
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
   CommandInteraction,
-  Guild,
   GuildMember,
   Interaction,
   ModalBuilder,
@@ -21,11 +23,22 @@ export default class PanelDeTiques extends AccionesBase {
     interaccion: Interaction,
   ): Promise<void> {
     if (interaccion.isCommand()) {
+      //
       await this.crearPanelDeTiques(interaccion);
+      //
     } else if (interaccion.isStringSelectMenu()) {
+      //
       await this.modalTiqueDeServicio(interaccion);
+      //
     } else if (interaccion.isModalSubmit()) {
+      //
       await this.crearTiqueDeServicio(interaccion);
+      //
+    } else if (interaccion.isButton()) {
+      //
+      this.cerrarTique(interaccion);
+      this.reabrirTique(interaccion);
+      this.eliminarTique(interaccion);
     }
   }
 
@@ -255,14 +268,211 @@ export default class PanelDeTiques extends AccionesBase {
     const idAutorInteraccion = interaccion.user.id;
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
 
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonCerrarTique(),
+    );
+
     await canalTique.send({
       content: `<@&${idRolSoporte}> <@${idAutorInteraccion}>`,
       embeds: [embedResumen],
+      components: [controles],
     });
 
     await interaccion.reply({
       content: `Tique creado en <#${canalTique.id}>.`,
       ephemeral: true,
     });
+  }
+
+  private static crearBotonCerrarTique(): ButtonBuilder {
+    const botonCerrarTique = new ButtonBuilder()
+      .setCustomId("boton-cerrar-tique")
+      .setEmoji("❌")
+      .setLabel("Cerrar tique")
+      .setStyle(ButtonStyle.Secondary);
+
+    return botonCerrarTique;
+  }
+
+  private static crearBotonEliminarTique(): ButtonBuilder {
+    const botonEliminarTique = new ButtonBuilder()
+      .setCustomId("boton-eliminar-tique")
+      .setEmoji("🗑")
+      .setLabel("Eliminar tique")
+      .setStyle(ButtonStyle.Danger);
+
+    return botonEliminarTique;
+  }
+
+  private static crearBotonReabrirTique(): ButtonBuilder {
+    const botonReabrirTique = new ButtonBuilder()
+      .setCustomId("boton-reabrir-tique")
+      .setEmoji("📖")
+      .setLabel("Reabrir tique")
+      .setStyle(ButtonStyle.Success);
+
+    return botonReabrirTique;
+  }
+
+  private static async cerrarTique(
+    interaccion: ButtonInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "boton-cerrar-tique") return;
+
+    const { guild, channel, user } = interaccion;
+
+    const rolEveryone = guild.roles.everyone;
+    const canalEstaCerrado = channel
+      .permissionsFor(rolEveryone)
+      .has(PermissionFlagsBits.SendMessages);
+
+    if (!canalEstaCerrado) {
+      interaccion.reply({
+        content: "El tique ya está cerrado",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    try {
+      channel.permissionOverwrites.edit(rolEveryone, { SendMessages: false });
+    } catch (error) {
+      interaccion.reply({
+        content: "Ocurrió un error al intentar cerrar el tique",
+        ephemeral: true,
+      });
+
+      this.log.error(
+        `Ocurrió un error al intentar cerrar el tique <${channel.name}>`,
+      );
+      this.log.error(error);
+
+      return;
+    }
+
+    const embed = await this.crearEmbedEstilizado();
+    embed
+      .setAuthor({
+        iconURL: user.avatarURL(),
+        name: user.username,
+      })
+      .setTitle("❌ Tique cerrado");
+
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonReabrirTique(),
+      this.crearBotonEliminarTique(),
+    );
+
+    await interaccion.reply({
+      embeds: [embed],
+      components: [controles],
+    });
+  }
+
+  public static async reabrirTique(interaccion: ButtonInteraction) {
+    if (interaccion.customId !== "boton-reabrir-tique") return;
+
+    const { guild, channel, user, member } = interaccion;
+
+    await this.api.obtenerRolesDeAdministracion();
+    const rolSoporteExiste = this.rolExiste(
+      guild,
+      this.api.rolesDeAdministracion.idSoporte,
+      "soporte",
+    );
+    if (!rolSoporteExiste) {
+      await interaccion.reply({
+        content: "Ocurrió un error al intentar rearbrir el tique",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    const autorInteraccionEsSoporte = member.roles.cache.has(
+      this.api.rolesDeAdministracion.idSoporte,
+    );
+    if (!autorInteraccionEsSoporte) {
+      await interaccion.reply({
+        content: "No tienes permisos para ejecutar esta interacción",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    const rolEveryone = guild.roles.everyone;
+
+    const canalEstaAbierto = channel
+      .permissionsFor(rolEveryone)
+      .has(PermissionFlagsBits.SendMessages);
+
+    if (canalEstaAbierto) {
+      interaccion.reply({
+        content: "El tique no está cerrado",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    try {
+      channel.permissionOverwrites.edit(rolEveryone, { SendMessages: true });
+    } catch (error) {
+      interaccion.reply({
+        content: "Ocurrió un error al intentar reabrir el tique",
+        ephemeral: true,
+      });
+
+      this.log.error(
+        `Ocurrió un error al intentar reabrir el tique <${channel.name}>`,
+      );
+      this.log.error(error);
+
+      return;
+    }
+
+    const embed = await this.crearEmbedEstilizado();
+    embed
+      .setAuthor({
+        iconURL: user.avatarURL(),
+        name: user.username,
+      })
+      .setTitle("📖 Tique reabierto");
+
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonCerrarTique(),
+    );
+
+    await interaccion.reply({
+      embeds: [embed],
+      components: [controles],
+    });
+
+    await interaccion.message.delete();
+  }
+
+  public static async eliminarTique(
+    interaccion: ButtonInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "boton-eliminar-tique") return;
+
+    const { member, channel } = interaccion;
+
+    await this.api.obtenerRolesDeAdministracion();
+    const autorInteraccionEsSoporte = member.roles.cache.has(
+      this.api.rolesDeAdministracion.idSoporte,
+    );
+    if (!autorInteraccionEsSoporte) {
+      interaccion.reply({
+        content: "No tienes permisos para ejecutar esta interacción",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    await channel.delete();
   }
 }
