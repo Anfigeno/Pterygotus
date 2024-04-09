@@ -68,43 +68,40 @@ export default class PanelDeTiques extends AccionesBase {
           "hagan mal uso de los tiques,",
       );
 
-    const opcionTiqueServicio = new StringSelectMenuOptionBuilder()
-      .setEmoji("🪙")
-      .setLabel("Servicio")
-      .setDescription("Contrata un servicio")
-      .setValue("opcion-tique-de-servicio");
+    const opciones: StringSelectMenuOptionBuilder[] = [
+      new StringSelectMenuOptionBuilder()
+        .setEmoji("🪙")
+        .setLabel("Servicio")
+        .setDescription("Contrata un servicio")
+        .setValue("opcion-tique-de-servicio"),
 
-    const opcionTiqueReporte = new StringSelectMenuOptionBuilder()
-      .setEmoji("📣")
-      .setLabel("Reporte")
-      .setDescription("Reporta un usuario o un problema")
-      .setValue("opcion-tique-de-reporte");
+      new StringSelectMenuOptionBuilder()
+        .setEmoji("📣")
+        .setLabel("Reporte")
+        .setDescription("Reporta un usuario o un problema")
+        .setValue("opcion-tique-de-reporte"),
 
-    const opcionTiquePostulacion = new StringSelectMenuOptionBuilder()
-      .setEmoji("🤚")
-      .setLabel("Postulación")
-      .setDescription("Postula a un cargo del servidor")
-      .setValue("opcion-tique-de-postulacion");
+      new StringSelectMenuOptionBuilder()
+        .setEmoji("🤚")
+        .setLabel("Postulación")
+        .setDescription("Postula a un cargo del servidor")
+        .setValue("opcion-tique-de-postulacion"),
 
-    const ocionTiqueCliente = new StringSelectMenuOptionBuilder()
-      .setEmoji("👤")
-      .setLabel("Cliente")
-      .setDescription("Si haz contratado un servicio")
-      .setValue("opcion-tique-de-cliente");
+      new StringSelectMenuOptionBuilder()
+        .setEmoji("👤")
+        .setLabel("Cliente")
+        .setDescription("Si haz contratado un servicio")
+        .setValue("opcion-tique-de-cliente"),
+    ];
 
-    const opciones =
+    const listaDeOpciones =
       new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
         new StringSelectMenuBuilder()
           .setCustomId("panel-de-tiques-opciones")
-          .setOptions(
-            opcionTiqueServicio,
-            opcionTiqueReporte,
-            opcionTiquePostulacion,
-            ocionTiqueCliente,
-          ),
+          .setOptions(opciones.map((opcion) => opcion)),
       );
 
-    await interaccion.reply({ embeds: [embed], components: [opciones] });
+    await interaccion.reply({ embeds: [embed], components: [listaDeOpciones] });
   }
 
   private static async modalTiqueDeServicio(
@@ -113,45 +110,39 @@ export default class PanelDeTiques extends AccionesBase {
     if (interaccion.customId !== "panel-de-tiques-opciones") return;
     if (interaccion.values[0] !== "opcion-tique-de-servicio") return;
 
-    const campoDescripcionServicio = new TextInputBuilder()
-      .setCustomId("campo-descripcion-del-servicio")
-      .setLabel("¿Qué tipo de servicio desea?")
-      .setPlaceholder(
-        "Quiero un ... que haga ... y tenga que ...\n (Sea muy descriptivo)",
-      )
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(true);
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setCustomId("campo-descripcion-del-servicio")
+        .setLabel("¿Qué tipo de servicio desea?")
+        .setPlaceholder(
+          "Quiero un ... que haga ... y tenga que ...\n (Sea muy descriptivo)",
+        )
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
 
-    const campoFechaDeEntrega = new TextInputBuilder()
-      .setCustomId("campo-fecha-de-entrega")
-      .setLabel("Fecha de entrega")
-      .setPlaceholder("DD/MM/AAAA (opcional)")
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false);
+      new TextInputBuilder()
+        .setCustomId("campo-fecha-de-entrega")
+        .setLabel("Fecha de entrega")
+        .setPlaceholder("DD/MM/AAAA (opcional)")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false),
 
-    const campoCostoDelServicio = new TextInputBuilder()
-      .setCustomId("campo-costo-del-servicio")
-      .setLabel("Costo del servicio USD")
-      .setPlaceholder(
-        "¿Crees que debería costar? (usamos esta info para ajustarnos a su presupuesto)",
-      )
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(false);
+      new TextInputBuilder()
+        .setCustomId("campo-costo-del-servicio")
+        .setLabel("Costo del servicio USD")
+        .setPlaceholder(
+          "¿Crees que debería costar? (usamos esta info para ajustarnos a su presupuesto)",
+        )
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(false),
+    ];
 
     const modal = new ModalBuilder()
       .setTitle("🪙 Contrata un servicio")
       .setCustomId("modal-tique-de-servicio")
       .setComponents(
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoDescripcionServicio,
-        ),
-
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoFechaDeEntrega,
-        ),
-
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoCostoDelServicio,
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
       );
 
@@ -281,7 +272,10 @@ export default class PanelDeTiques extends AccionesBase {
     const embedResumen = await this.crearEmbedEstilizado();
     embedResumen.setTitle("🪙 Tique de servicio").setFields({
       name: "Descripcion del servicio",
-      value: `> ${descripcionDelServicio}`,
+      value: descripcionDelServicio
+        .split("\n")
+        .map((parrafo) => `> ${parrafo}`)
+        .join("\n"),
     });
 
     if (fechaDeEntrega) {
