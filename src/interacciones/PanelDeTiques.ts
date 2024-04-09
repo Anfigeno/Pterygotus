@@ -33,10 +33,12 @@ export default class PanelDeTiques extends AccionesBase {
     } else if (interaccion.isStringSelectMenu()) {
       //
       await this.modalTiqueDeServicio(interaccion);
+      await this.modalTiqueDeReporte(interaccion);
       //
     } else if (interaccion.isModalSubmit()) {
       //
       await this.crearTiqueDeServicio(interaccion);
+      await this.crearTiqueDeReporte(interaccion);
       //
     } else if (interaccion.isButton()) {
       //
@@ -70,25 +72,25 @@ export default class PanelDeTiques extends AccionesBase {
       .setEmoji("🪙")
       .setLabel("Servicio")
       .setDescription("Contrata un servicio")
-      .setValue("opcion-tique-servicio");
+      .setValue("opcion-tique-de-servicio");
 
     const opcionTiqueReporte = new StringSelectMenuOptionBuilder()
       .setEmoji("📣")
       .setLabel("Reporte")
       .setDescription("Reporta un usuario o un problema")
-      .setValue("opcion-tique-reporte");
+      .setValue("opcion-tique-de-reporte");
 
     const opcionTiquePostulacion = new StringSelectMenuOptionBuilder()
       .setEmoji("🤚")
       .setLabel("Postulación")
       .setDescription("Postula a un cargo del servidor")
-      .setValue("opcion-tique-postulacion");
+      .setValue("opcion-tique-de-postulacion");
 
     const ocionTiqueCliente = new StringSelectMenuOptionBuilder()
       .setEmoji("👤")
       .setLabel("Cliente")
       .setDescription("Si haz contratado un servicio")
-      .setValue("opcion-tique-cliente");
+      .setValue("opcion-tique-de-cliente");
 
     const opciones =
       new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
@@ -109,7 +111,7 @@ export default class PanelDeTiques extends AccionesBase {
     interaccion: StringSelectMenuInteraction,
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-tiques-opciones") return;
-    if (interaccion.values[0] !== "opcion-tique-servicio") return;
+    if (interaccion.values[0] !== "opcion-tique-de-servicio") return;
 
     const campoDescripcionServicio = new TextInputBuilder()
       .setCustomId("campo-descripcion-del-servicio")
@@ -150,6 +152,40 @@ export default class PanelDeTiques extends AccionesBase {
 
         new ActionRowBuilder<TextInputBuilder>().setComponents(
           campoCostoDelServicio,
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async modalTiqueDeReporte(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-tiques-opciones") return;
+    if (interaccion.values[0] !== "opcion-tique-de-reporte") return;
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Nombre del usuario o problema a reportar")
+        .setCustomId("campo-usuario-o-problema")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true),
+
+      new TextInputBuilder()
+        .setLabel("Descripción del reporte")
+        .setCustomId("campo-razon-del-reporte")
+        .setPlaceholder(
+          "El usuario ... estaba haciendo ...\nPasó algo extraño en un canal...",
+        )
+        .setStyle(TextInputStyle.Paragraph),
+    ];
+
+    const modal = new ModalBuilder()
+      .setTitle("📣 Reporta a un usuario o un problema")
+      .setCustomId("modal-tique-de-reporte")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
       );
 
@@ -277,6 +313,59 @@ export default class PanelDeTiques extends AccionesBase {
 
     await interaccion.reply({
       content: `Tique creado en <#${canalTique.id}>.`,
+      ephemeral: true,
+    });
+  }
+
+  private static async crearTiqueDeReporte(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-tique-de-reporte") return;
+
+    const canalTique = await this.crearCanalTique(interaccion, "📣");
+
+    if (!canalTique) return;
+
+    const { fields: camposModal, user: usuario } = interaccion;
+
+    const usuarioOProblema = camposModal.getTextInputValue(
+      "campo-usuario-o-problema",
+    );
+
+    const razonDelReporte = camposModal.getTextInputValue(
+      "campo-razon-del-reporte",
+    );
+
+    const embedResumen = await this.crearEmbedEstilizado();
+    embedResumen.setTitle("📣 Tique de reporte").setFields(
+      {
+        name: "Usuario o probelema",
+        value: `> ${usuarioOProblema}`,
+      },
+      {
+        name: "Razón del reporte",
+        value: razonDelReporte
+          .split("\n")
+          .map((parrafo) => `> ${parrafo}`)
+          .join("\n"),
+      },
+    );
+
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonCerrarTique(),
+    );
+
+    await this.api.obtenerRolesDeAdministracion();
+    const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
+
+    await canalTique.send({
+      content: `<@&${idRolSoporte}> <@${usuario.id}>`,
+      embeds: [embedResumen],
+      components: [controles],
+    });
+
+    await interaccion.reply({
+      content: `Tique creado en ${canalTique}`,
       ephemeral: true,
     });
   }
