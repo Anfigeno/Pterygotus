@@ -5,7 +5,9 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
+  Guild,
   GuildMember,
+  GuildTextBasedChannel,
   Interaction,
   ModalBuilder,
   ModalSubmitInteraction,
@@ -13,9 +15,11 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
+  TextBasedChannel,
   TextChannel,
   TextInputBuilder,
   TextInputStyle,
+  User,
 } from "discord.js";
 
 export default class PanelDeTiques extends AccionesBase {
@@ -158,7 +162,7 @@ export default class PanelDeTiques extends AccionesBase {
   ): Promise<TextChannel | void> {
     await this.api.obtenerRolesDeAdministracion();
 
-    const guild = interaccion.guild;
+    const { guild, user } = interaccion;
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
     const rolSoporteExiste = this.rolExiste(guild, idRolSoporte, "Soporte");
 
@@ -173,30 +177,13 @@ export default class PanelDeTiques extends AccionesBase {
 
     await this.api.obtenerTiques();
 
-    const idCanalRegistrosTiques = this.api.tiques.idCanalDeRegistros;
-    const canalRegistrosTiquesExiste = this.canalExiste(
-      guild,
-      idCanalRegistrosTiques,
-      "Canal de registros",
-    );
-
-    if (!canalRegistrosTiquesExiste) {
-      await interaccion.reply({
-        content: "Ocurrió un error al crear el tique.",
-        ephemeral: true,
-      });
-
-      return;
-    }
-
-    const autorInteraccion = interaccion.user;
     const cantidadTiques = this.api.tiques.cantidad;
     const idCategoriaTiques = this.api.tiques.idCategoria;
     const rolEveryone = guild.roles.everyone;
 
     try {
       const canalTique = await guild.channels.create({
-        name: `${emoji}・${autorInteraccion.username}-${cantidadTiques}`,
+        name: `${emoji}・${user.username}-${cantidadTiques}`,
         parent: idCategoriaTiques,
         permissionOverwrites: [
           {
@@ -211,11 +198,17 @@ export default class PanelDeTiques extends AccionesBase {
             deny: [PermissionFlagsBits.ViewChannel],
           },
           {
-            id: autorInteraccion.id,
+            id: user.id,
             allow: [PermissionFlagsBits.ViewChannel],
           },
         ],
       });
+
+      try {
+        await this.registrarCreacionDeTique(guild, canalTique, user);
+      } catch (error) {
+        this.log.error(error);
+      }
 
       return canalTique;
     } catch (error) {
@@ -323,10 +316,10 @@ export default class PanelDeTiques extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "boton-cerrar-tique") return;
 
-    const { guild, channel, user } = interaccion;
+    const { guild: servidor, channel: canalTique, user: usuario } = interaccion;
 
-    const rolEveryone = guild.roles.everyone;
-    const canalEstaCerrado = channel
+    const rolEveryone = servidor.roles.everyone;
+    const canalEstaCerrado = canalTique
       .permissionsFor(rolEveryone)
       .has(PermissionFlagsBits.SendMessages);
 
@@ -340,7 +333,9 @@ export default class PanelDeTiques extends AccionesBase {
     }
 
     try {
-      channel.permissionOverwrites.edit(rolEveryone, { SendMessages: false });
+      canalTique.permissionOverwrites.edit(rolEveryone, {
+        SendMessages: false,
+      });
     } catch (error) {
       interaccion.reply({
         content: "Ocurrió un error al intentar cerrar el tique",
@@ -348,7 +343,7 @@ export default class PanelDeTiques extends AccionesBase {
       });
 
       this.log.error(
-        `Ocurrió un error al intentar cerrar el tique <${channel.name}>`,
+        `Ocurrió un error al intentar cerrar el tique <${canalTique.name}>`,
       );
       this.log.error(error);
 
@@ -358,8 +353,8 @@ export default class PanelDeTiques extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
     embed
       .setAuthor({
-        iconURL: user.avatarURL(),
-        name: user.username,
+        iconURL: usuario.avatarURL(),
+        name: usuario.username,
       })
       .setTitle("❌ Tique cerrado");
 
@@ -372,16 +367,23 @@ export default class PanelDeTiques extends AccionesBase {
       embeds: [embed],
       components: [controles],
     });
+
+    await this.registrarClausuraDeTique(servidor, canalTique, usuario);
   }
 
   public static async reabrirTique(interaccion: ButtonInteraction) {
     if (interaccion.customId !== "boton-reabrir-tique") return;
 
-    const { guild, channel, user, member } = interaccion;
+    const {
+      guild: servidor,
+      channel: canalTique,
+      user: usuario,
+      member: miembro,
+    } = interaccion;
 
     await this.api.obtenerRolesDeAdministracion();
     const rolSoporteExiste = this.rolExiste(
-      guild,
+      servidor,
       this.api.rolesDeAdministracion.idSoporte,
       "soporte",
     );
@@ -394,7 +396,7 @@ export default class PanelDeTiques extends AccionesBase {
       return;
     }
 
-    const autorInteraccionEsSoporte = member.roles.cache.has(
+    const autorInteraccionEsSoporte = miembro.roles.cache.has(
       this.api.rolesDeAdministracion.idSoporte,
     );
     if (!autorInteraccionEsSoporte) {
@@ -406,9 +408,9 @@ export default class PanelDeTiques extends AccionesBase {
       return;
     }
 
-    const rolEveryone = guild.roles.everyone;
+    const rolEveryone = servidor.roles.everyone;
 
-    const canalEstaAbierto = channel
+    const canalEstaAbierto = canalTique
       .permissionsFor(rolEveryone)
       .has(PermissionFlagsBits.SendMessages);
 
@@ -422,7 +424,7 @@ export default class PanelDeTiques extends AccionesBase {
     }
 
     try {
-      channel.permissionOverwrites.edit(rolEveryone, { SendMessages: true });
+      canalTique.permissionOverwrites.edit(rolEveryone, { SendMessages: true });
     } catch (error) {
       interaccion.reply({
         content: "Ocurrió un error al intentar reabrir el tique",
@@ -430,7 +432,7 @@ export default class PanelDeTiques extends AccionesBase {
       });
 
       this.log.error(
-        `Ocurrió un error al intentar reabrir el tique <${channel.name}>`,
+        `Ocurrió un error al intentar reabrir el tique <${canalTique.name}>`,
       );
       this.log.error(error);
 
@@ -440,8 +442,8 @@ export default class PanelDeTiques extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
     embed
       .setAuthor({
-        iconURL: user.avatarURL(),
-        name: user.username,
+        iconURL: usuario.avatarURL(),
+        name: usuario.username,
       })
       .setTitle("📖 Tique reabierto");
 
@@ -455,6 +457,8 @@ export default class PanelDeTiques extends AccionesBase {
     });
 
     await interaccion.message.delete();
+
+    await this.registrarReaperturaDeTique(servidor, canalTique, usuario);
   }
 
   public static async eliminarTique(
@@ -462,10 +466,15 @@ export default class PanelDeTiques extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "boton-eliminar-tique") return;
 
-    const { member, channel } = interaccion;
+    const {
+      member: miembro,
+      channel: canalTique,
+      guild: servidor,
+      user: usuario,
+    } = interaccion;
 
     await this.api.obtenerRolesDeAdministracion();
-    const autorInteraccionEsSoporte = member.roles.cache.has(
+    const autorInteraccionEsSoporte = miembro.roles.cache.has(
       this.api.rolesDeAdministracion.idSoporte,
     );
     if (!autorInteraccionEsSoporte) {
@@ -477,6 +486,159 @@ export default class PanelDeTiques extends AccionesBase {
       return;
     }
 
-    await channel.delete();
+    await this.registrarEliminacionDeTique(servidor, canalTique, usuario);
+
+    await canalTique.delete();
+  }
+
+  private static async obtenerCanalDeRegistrosDeTiques(
+    servidor: Guild,
+    canalTique: GuildTextBasedChannel,
+  ): Promise<TextBasedChannel> {
+    await this.api.obtenerTiques();
+
+    if (this.api.tiques.idCanalDeRegistros == null) {
+      throw new Error(
+        `Se intentó registrar la creación del tique <${canalTique.name}>,
+        pero no sea ha definido el canal de registros de los tiques`,
+      );
+    }
+
+    const canalDeRegistrosDeTiquesExiste = servidor.channels.cache.has(
+      this.api.tiques.idCanalDeRegistros,
+    );
+
+    if (!canalDeRegistrosDeTiquesExiste) {
+      throw new Error(
+        `Se intentó registrar la creación del tique <${canalTique.name}>,
+        pero el canal de registros de tiques no existe`,
+      );
+    }
+
+    const canalDeRegistrosDeTiques = servidor.channels.cache.get(
+      this.api.tiques.idCanalDeRegistros,
+    );
+
+    if (!canalDeRegistrosDeTiques.isTextBased()) {
+      throw new Error(
+        `Se intentó registrar la creación del tique <${canalTique.name}>,
+        pero el canal de registros de tiques no es un canal de texto`,
+      );
+    }
+
+    return canalDeRegistrosDeTiques;
+  }
+
+  private static async registrarCreacionDeTique(
+    servidor: Guild,
+    canalTique: GuildTextBasedChannel,
+    usuario: User,
+  ): Promise<void> {
+    try {
+      const canalDeRegistrosDeTiques =
+        await this.obtenerCanalDeRegistrosDeTiques(servidor, canalTique);
+
+      const embed = await this.crearEmbedEstilizado();
+      embed
+        .setAuthor({
+          iconURL: usuario.avatarURL(),
+          name: usuario.username,
+        })
+        .setDescription(`Se ha creado el tique <${canalTique.name}>`);
+
+      await canalDeRegistrosDeTiques.send({
+        embeds: [embed],
+      });
+    } catch (error) {
+      this.log.error(error);
+
+      return;
+    }
+
+    try {
+      await this.api.actualizarCantidadTiques();
+    } catch (error) {
+      this.log.error(
+        "Ocurrió un error al intentar actualizar la cantidad de tiques",
+      );
+      this.log.error(error);
+    }
+  }
+
+  private static async registrarClausuraDeTique(
+    servidor: Guild,
+    canalTique: GuildTextBasedChannel,
+    usuario: User,
+  ): Promise<void> {
+    try {
+      const canalDeRegistrosDeTiques =
+        await this.obtenerCanalDeRegistrosDeTiques(servidor, canalTique);
+
+      const embed = await this.crearEmbedEstilizado();
+      embed
+        .setAuthor({
+          iconURL: usuario.avatarURL(),
+          name: usuario.username,
+        })
+        .setDescription(`Se ha clausurado el tique <${canalTique.name}>`);
+
+      await canalDeRegistrosDeTiques.send({
+        embeds: [embed],
+      });
+    } catch (error) {
+      this.log.error(error);
+    }
+  }
+
+  private static async registrarReaperturaDeTique(
+    servidor: Guild,
+    canalTique: GuildTextBasedChannel,
+    usuario: User,
+  ): Promise<void> {
+    try {
+      const canalDeRegistrosDeTiques =
+        await this.obtenerCanalDeRegistrosDeTiques(servidor, canalTique);
+
+      const embed = await this.crearEmbedEstilizado();
+      embed
+        .setAuthor({
+          iconURL: usuario.avatarURL(),
+          name: usuario.username,
+        })
+        .setDescription(`Se ha reabierto el tique <${canalTique.name}>`);
+
+      await canalDeRegistrosDeTiques.send({
+        embeds: [embed],
+      });
+    } catch (error) {
+      this.log.error(error);
+    }
+  }
+
+  private static async registrarEliminacionDeTique(
+    servidor: Guild,
+    canalTique: GuildTextBasedChannel,
+    usuario: User,
+  ): Promise<void> {
+    try {
+      const canalDeRegistrosDeTiques =
+        await this.obtenerCanalDeRegistrosDeTiques(servidor, canalTique);
+
+      const embed = await this.crearEmbedEstilizado();
+      embed
+        .setAuthor({
+          iconURL: usuario.avatarURL(),
+          name: usuario.username,
+        })
+        .setDescription(`Se ha eliminado el tique <${canalTique.name}>`);
+
+      await canalDeRegistrosDeTiques.send({
+        embeds: [embed],
+      });
+
+      await canalTique.delete();
+    } catch (error) {
+      this.log.error(error);
+    }
   }
 }
