@@ -34,11 +34,15 @@ export default class PanelDeTiques extends AccionesBase {
       //
       await this.modalTiqueDeServicio(interaccion);
       await this.modalTiqueDeReporte(interaccion);
+      await this.modalTiqueDePostulacion(interaccion);
+      await this.modalTiqueDeCliente(interaccion);
       //
     } else if (interaccion.isModalSubmit()) {
       //
       await this.crearTiqueDeServicio(interaccion);
       await this.crearTiqueDeReporte(interaccion);
+      await this.crearTiqueDePostulacion(interaccion);
+      await this.crearTiqueDeCliente(interaccion);
       //
     } else if (interaccion.isButton()) {
       //
@@ -174,6 +178,66 @@ export default class PanelDeTiques extends AccionesBase {
     const modal = new ModalBuilder()
       .setTitle("📣 Reporta a un usuario o un problema")
       .setCustomId("modal-tique-de-reporte")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async modalTiqueDePostulacion(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-tiques-opciones") return;
+    if (interaccion.values[0] !== "opcion-tique-de-postulacion") return;
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Cargo al que desea postular")
+        .setPlaceholder("Moderador o soporte")
+        .setCustomId("campo-cargo")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true),
+
+      new TextInputBuilder()
+        .setLabel("Razón de la postulación")
+        .setCustomId("campo-razon-de-la-postulacion")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
+    ];
+
+    const modal = new ModalBuilder()
+      .setTitle("🛡 Postula a un cargo del servidor")
+      .setCustomId("modal-tique-de-postulacion")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async modalTiqueDeCliente(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-tiques-opciones") return;
+    if (interaccion.values[0] !== "opcion-tique-de-cliente") return;
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Razón")
+        .setPlaceholder("Mi producto ... esta ...")
+        .setStyle(TextInputStyle.Paragraph)
+        .setCustomId("campo-razon")
+        .setRequired(true),
+    ];
+
+    const modal = new ModalBuilder()
+      .setCustomId("modal-tique-de-cliente")
+      .setTitle("🪙 Cliente")
       .setComponents(
         campos.map((campo) =>
           new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
@@ -354,6 +418,97 @@ export default class PanelDeTiques extends AccionesBase {
 
     await canalTique.send({
       content: `<@&${idRolSoporte}> <@${usuario.id}>`,
+      embeds: [embedResumen],
+      components: [controles],
+    });
+
+    await interaccion.reply({
+      content: `Tique creado en ${canalTique}`,
+      ephemeral: true,
+    });
+  }
+
+  private static async crearTiqueDePostulacion(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-tique-de-postulacion") return;
+
+    const canalTique = await this.crearCanalTique(interaccion, "🛡");
+
+    if (!canalTique) return;
+
+    const { fields: camposModal, user: usuario } = interaccion;
+
+    const campoCargo = camposModal.getTextInputValue("campo-cargo");
+    const campoRazonDeLaPostulacion = camposModal.getTextInputValue(
+      "campo-razon-de-la-postulacion",
+    );
+
+    const embedResumen = await this.crearEmbedEstilizado();
+    embedResumen.setTitle("🛡 Tique de postulación").setFields(
+      {
+        name: "Cargo deseado",
+        value: `> ${campoCargo}`,
+      },
+      {
+        name: "Razón de la postulación",
+        value: campoRazonDeLaPostulacion
+          .split("\n")
+          .map((parrafo) => `> ${parrafo}`)
+          .join("\n"),
+      },
+    );
+
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonCerrarTique(),
+    );
+
+    await this.api.obtenerRolesDeAdministracion();
+    const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
+
+    await canalTique.send({
+      content: `<@&${idRolSoporte}> ${usuario}`,
+      embeds: [embedResumen],
+      components: [controles],
+    });
+
+    await interaccion.reply({
+      content: `Tique creado en ${canalTique}`,
+      ephemeral: true,
+    });
+  }
+
+  private static async crearTiqueDeCliente(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-tique-de-cliente") return;
+
+    const canalTique = await this.crearCanalTique(interaccion, "👤");
+
+    if (!canalTique) return;
+
+    const { fields: camposModal, user: usuario } = interaccion;
+
+    const campoRazon = camposModal.getTextInputValue("campo-razon");
+
+    const embedResumen = await this.crearEmbedEstilizado();
+    embedResumen.setTitle("👤 Tique de cliente").setFields({
+      name: "Razón del tique",
+      value: campoRazon
+        .split("\n")
+        .map((parrafo) => `> ${parrafo}`)
+        .join("\n"),
+    });
+
+    const controles = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      this.crearBotonCerrarTique(),
+    );
+
+    await this.api.obtenerRolesDeAdministracion();
+    const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
+
+    await canalTique.send({
+      content: `<@&${idRolSoporte}> ${usuario}>`,
       embeds: [embedResumen],
       components: [controles],
     });
