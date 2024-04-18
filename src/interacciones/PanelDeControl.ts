@@ -1,5 +1,6 @@
 import AccionesBase from "@lib/AccionesBase";
 import {
+  Autoroles,
   CanalesDeRegistros,
   Embeds,
   RolesDeAdministracion,
@@ -28,6 +29,7 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.obtenerRolesDeAdministracion();
     await this.api.obtenerEmbeds();
     await this.api.obtenerCanalesDeRegistros();
+    await this.api.obtenerAutoroles();
 
     embed.setTitle("💻 Panel de control").setFields(
       {
@@ -56,6 +58,15 @@ export default class PanelDeControl extends AccionesBase {
               > Usuarios: <#${this.api.canalesDeRegistros.idCanalUsuarios}>
               > Sanciones: <#${this.api.canalesDeRegistros.idCanalSanciones}>
               > Servidor: <#${this.api.canalesDeRegistros.idCanalServidor}>`,
+      },
+      {
+        name: "🛑 Autoroles",
+        value:
+          this.api.autoroles.length > 0
+            ? this.api.autoroles
+                .map((rol) => `> ${rol.emoji ? rol.emoji : "⚪"} <@&${rol.id}>`)
+                .join("\n")
+            : "Nada",
       },
     );
 
@@ -96,6 +107,11 @@ export default class PanelDeControl extends AccionesBase {
               .setEmoji("📄")
               .setLabel("Editar canales de registros")
               .setValue("editar-canales-de-registros"),
+
+            new StringSelectMenuOptionBuilder()
+              .setEmoji("🛑")
+              .setLabel("Editar autoroles")
+              .setValue("editar-autoroles"),
           ),
       );
 
@@ -106,17 +122,25 @@ export default class PanelDeControl extends AccionesBase {
     interaccion: Interaction,
   ): Promise<void> {
     if (interaccion.isCommand()) {
+      //
       await this.crearPanelDeControl(interaccion);
+      //
     } else if (interaccion.isStringSelectMenu()) {
+      //
       await this.modalEditarTiques(interaccion);
       await this.modalEditarRolesDeAdministracion(interaccion);
       await this.modalEditarEmbeds(interaccion);
       await this.modalEditarCanalesDeRegistros(interaccion);
+      await this.modalEditarAutoroles(interaccion);
+      //
     } else if (interaccion.isModalSubmit()) {
+      //
       await this.editarTiques(interaccion);
       await this.editarRolesDeAdministracion(interaccion);
       await this.editarEmbeds(interaccion);
       await this.editarCanalesDeRegistros(interaccion);
+      await this.editarAutoroles(interaccion);
+      //
     }
   }
 
@@ -497,6 +521,89 @@ export default class PanelDeControl extends AccionesBase {
     interaccion.reply({
       content: "Canales de registros editados correctamente.",
       ephemeral: true,
+    });
+  }
+
+  private static async modalEditarAutoroles(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-autoroles") return;
+
+    const autorInteraccion = interaccion.member as GuildMember;
+    if (!this.esAdmin(autorInteraccion)) {
+      await interaccion.reply({
+        content: "No tienes permisos para ejecutar esta interaccion",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    await this.api.obtenerAutoroles();
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Autoroles")
+        .setValue(JSON.stringify(this.api.autoroles))
+        .setCustomId("campo-autoroles")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
+    ];
+
+    const modal = new ModalBuilder()
+      .setTitle("🛑 Editar autoroles")
+      .setCustomId("modal-editar-autoroles")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async editarAutoroles(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-autoroles") return;
+
+    const campoAutoroles =
+      interaccion.fields.getTextInputValue("campo-autoroles");
+    let nuevosDatos: Autoroles[] = [];
+
+    try {
+      nuevosDatos = JSON.parse(campoAutoroles);
+    } catch (error) {
+      await interaccion.reply({
+        content: "Los datos proveídos no son validos",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    try {
+      await this.api.actualizarAutoroles(nuevosDatos);
+    } catch (error) {
+      await interaccion.reply({
+        content: "Ocurrió un error al intentar actualizar los autoroles",
+        ephemeral: true,
+      });
+
+      this.log.error("Ocurrió un error al intentar actualizar los autoroles");
+      this.log.error(error);
+
+      return;
+    }
+
+    await interaccion.reply({
+      content: "Autoroles actualizados",
+      ephemeral: true,
+    });
+
+    await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
     });
   }
 }

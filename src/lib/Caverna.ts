@@ -10,6 +10,7 @@ export default class Caverna {
   public rolesDeAdministracion: RolesDeAdministracion;
   public embeds: Embeds;
   public canalesDeRegistros: CanalesDeRegistros;
+  public autoroles: Autoroles[] = [];
 
   constructor(tokenApi: string) {
     this.tokenApi = tokenApi;
@@ -189,6 +190,45 @@ export default class Caverna {
     };
   }
 
+  public async obtenerAutoroles(): Promise<void> {
+    const url = `${this.urlApi}/autoroles`;
+
+    const respuesta = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+    });
+
+    if (respuesta.ok) {
+      const datos = await respuesta.json();
+      this.autoroles = datos.map((dato) => {
+        return {
+          id: dato.id_rol,
+          nombre: dato.nombre,
+          emoji: dato.emoji,
+          tipo: dato.tipo,
+        };
+      });
+      return;
+    }
+
+    const creacion = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+    });
+
+    if (!creacion.ok) {
+      throw new Error(await creacion.json());
+    }
+
+    this.autoroles = [];
+  }
+
   public async actualizarTiques(nuevosDatos: Tiques): Promise<void> {
     const url = `${this.urlApi}/tiques`;
 
@@ -294,6 +334,32 @@ export default class Caverna {
       throw new Error(JSON.stringify(await respuesta.json()));
     }
   }
+
+  public async actualizarAutoroles(nuevosDatos: Autoroles[]): Promise<void> {
+    const url = `${this.urlApi}/autoroles`;
+
+    const respuesta = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+      method: "PUT",
+      body: JSON.stringify(
+        nuevosDatos.map((dato) => {
+          return {
+            id_rol: dato.id,
+            nombre: dato.nombre,
+            emoji: dato.emoji,
+            tipo: dato.tipo,
+          };
+        }),
+      ),
+    });
+
+    if (!respuesta.ok) {
+      throw new Error(await respuesta.json());
+    }
+  }
 }
 
 export interface Tiques {
@@ -321,4 +387,11 @@ export interface CanalesDeRegistros {
   idCanalUsuarios: string | null;
   idCanalSanciones: string | null;
   idCanalServidor: string | null;
+}
+
+export interface Autoroles {
+  id: string | null;
+  nombre: string | null;
+  emoji: string | null;
+  tipo: "lenguaje" | "nivel" | "edad" | string | null;
 }
