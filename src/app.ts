@@ -25,14 +25,3 @@ cliente.on("interactionCreate", async (interaccion) => {
   PanelDeControl.manejarInteraccion(interaccion);
   PanelDeTiques.manejarInteraccion(interaccion);
 });
-
-cliente.on("messageCreate", async (mensaje) => {
-  const idRespuestaMensaje = mensaje.reference?.messageId;
-
-  if (!idRespuestaMensaje) return;
-
-  const respuestaMensaje = await mensaje.channel.messages.fetch(idRespuestaMensaje);
-
-  console.log(respuestaMensaje.id);
-
-});
