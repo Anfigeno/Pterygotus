@@ -1,6 +1,6 @@
 import AccionesBase from "@lib/AccionesBase";
 import {
-  Autoroles,
+  Autorol,
   CanalesDeRegistros,
   Embeds,
   RolesDeAdministracion,
@@ -558,7 +558,7 @@ export default class PanelDeControl extends AccionesBase {
 
     const campoAutoroles =
       interaccion.fields.getTextInputValue("campo-autoroles");
-    let nuevosDatos: Autoroles[] = [];
+    let nuevosDatos: Autorol[] = [];
 
     try {
       nuevosDatos = JSON.parse(campoAutoroles);
