@@ -7,6 +7,7 @@ import {
   GuildTextBasedChannel,
   Interaction,
   StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
 } from "discord.js";
 
@@ -15,7 +16,15 @@ export default class PanelDeAutoroles extends AccionesBase {
     interaccion: Interaction,
   ): Promise<void> {
     if (interaccion.isCommand()) {
+      //
       await this.crearPanelDeAutoroles(interaccion);
+      //
+    } else if (interaccion.isStringSelectMenu()) {
+      //
+      await this.darRolesDeLenguaje(interaccion);
+      await this.darRolDeNivel(interaccion);
+      await this.darRolDeEdad(interaccion);
+      //
     }
   }
 
@@ -187,6 +196,128 @@ export default class PanelDeAutoroles extends AccionesBase {
     await canal.send({
       embeds: [embed],
       components: [controles],
+    });
+  }
+
+  private static async darRolesDeLenguaje(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "selector-de-lenguajes") return;
+
+    const { values: valores, member: miembro, user: usuario } = interaccion;
+
+    const nombresAutorolesQueDar: string[] = valores.map((valor) =>
+      valor.slice(17),
+    );
+    const idAutorolesQueDar: string[] = [];
+
+    await this.api.obtenerAutoroles();
+    this.api.autoroles.forEach((autorol) =>
+      nombresAutorolesQueDar.forEach((nombreAutorol) => {
+        if (autorol.nombre === nombreAutorol) {
+          idAutorolesQueDar.push(autorol.id);
+        }
+      }),
+    );
+
+    try {
+      miembro.roles.add(idAutorolesQueDar);
+    } catch (error) {
+      this.log.error(
+        `Ocurrió un error al intentar dar los autoroles de lenguaje al usuario ${usuario.username}`,
+      );
+      this.log.error(error);
+
+      await interaccion.reply({
+        content: "Ocurrió un error al ejecutar esta interacción",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    await interaccion.reply({
+      content: "Autoroles añadidos!",
+      ephemeral: true,
+    });
+  }
+
+  private static async darRolDeNivel(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "selector-de-nivel") return;
+
+    const { values: valores, member: miembro, user: usuario } = interaccion;
+
+    const nombreAutorolQueDar: string = valores[0].slice(14);
+    let idAutorolQueDar: string;
+
+    await this.api.obtenerAutoroles();
+    this.api.autoroles.forEach((autorol) => {
+      if (autorol.nombre === nombreAutorolQueDar) {
+        idAutorolQueDar = autorol.id;
+        return;
+      }
+    });
+
+    try {
+      miembro.roles.add(idAutorolQueDar);
+    } catch (error) {
+      this.log.error(
+        `Ocurrió un error al intentar dar el autorol de nivel al usuario ${usuario.username}`,
+      );
+      this.log.error(error);
+
+      await interaccion.reply({
+        content: "Ocurrió un error al intentar ejecutar esta interacción",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    await interaccion.reply({
+      content: "Autorol añadido!",
+      ephemeral: true,
+    });
+  }
+
+  private static async darRolDeEdad(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "selector-de-edad") return;
+
+    const { values: valores, member: miembro, user: usuario } = interaccion;
+
+    const nombreAutorolQueDar: string = valores[0].slice(13);
+    let idAutorolQueDar: string;
+
+    await this.api.obtenerAutoroles();
+    this.api.autoroles.forEach((autorol) => {
+      if (autorol.nombre === nombreAutorolQueDar) {
+        idAutorolQueDar = autorol.id;
+      }
+    });
+
+    try {
+      miembro.roles.add(idAutorolQueDar);
+    } catch (error) {
+      this.log.error(
+        `Ocurrió un error al intentar dar el autorol de edad al usuario ${usuario.username}`,
+      );
+      this.log.error(error);
+
+      await interaccion.reply({
+        content: "Ocurrió un error al intentar ejecutar esta interacción",
+        ephemeral: true,
+      });
+
+      return;
+    }
+
+    interaccion.reply({
+      content: "Autorol añadido!",
+      ephemeral: true,
     });
   }
 }
