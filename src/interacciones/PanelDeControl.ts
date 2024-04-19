@@ -164,29 +164,28 @@ export default class PanelDeControl extends AccionesBase {
       return;
     }
 
-    const campoIdCanalDeRegistros = new TextInputBuilder()
-      .setCustomId("campo-id-canal-de-registros")
-      .setLabel("ID del canal de registros")
-      .setValue(`${this.api.tiques.idCanalDeRegistros}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setCustomId("campo-id-canal-de-registros")
+        .setLabel("ID del canal de registros")
+        .setValue(`${this.api.tiques.idCanalDeRegistros}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdCategoria = new TextInputBuilder()
-      .setCustomId("campo-id-categoria")
-      .setLabel("ID de la categoría")
-      .setValue(`${this.api.tiques.idCategoria}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-categoria")
+        .setLabel("ID de la categoría")
+        .setValue(`${this.api.tiques.idCategoria}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
+    ];
 
     const modal = new ModalBuilder()
       .setTitle("🎟 Editar tiques")
       .setCustomId("modal-editar-tiques")
       .setComponents(
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCanalDeRegistros,
-        ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCategoria,
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
       );
 
@@ -239,54 +238,50 @@ export default class PanelDeControl extends AccionesBase {
 
     await this.api.obtenerRolesDeAdministracion();
 
-    const campoIdAdministrador = new TextInputBuilder()
-      .setCustomId("campo-id-administrador")
-      .setLabel("ID del rol administrador")
-      .setValue(`${this.api.rolesDeAdministracion.idAdministrador}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setCustomId("campo-id-administrador")
+        .setLabel("ID del rol administrador")
+        .setValue(`${this.api.rolesDeAdministracion.idAdministrador}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdDirector = new TextInputBuilder()
-      .setCustomId("campo-id-director")
-      .setLabel("ID del rol director")
-      .setValue(`${this.api.rolesDeAdministracion.idDirector}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-director")
+        .setLabel("ID del rol director")
+        .setValue(`${this.api.rolesDeAdministracion.idDirector}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdModerador = new TextInputBuilder()
-      .setCustomId("campo-id-moderador")
-      .setLabel("ID del rol moderador")
-      .setValue(`${this.api.rolesDeAdministracion.idModerador}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-moderador")
+        .setLabel("ID del rol moderador")
+        .setValue(`${this.api.rolesDeAdministracion.idModerador}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdSoporte = new TextInputBuilder()
-      .setCustomId("campo-id-soporte")
-      .setLabel("ID del rol soporte")
-      .setValue(`${this.api.rolesDeAdministracion.idSoporte}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-soporte")
+        .setLabel("ID del rol soporte")
+        .setValue(`${this.api.rolesDeAdministracion.idSoporte}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdInterno = new TextInputBuilder()
-      .setCustomId("campo-id-interno")
-      .setLabel("ID del rol interno")
-      .setValue(`${this.api.rolesDeAdministracion.idInterno}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-interno")
+        .setLabel("ID del rol interno")
+        .setValue(`${this.api.rolesDeAdministracion.idInterno}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
+    ];
 
     const modal = new ModalBuilder()
       .setTitle("🎟 Editar roles de administración")
       .setCustomId("modal-editar-roles-de-administracion")
       .setComponents(
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdAdministrador,
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdDirector),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdModerador,
-        ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdSoporte),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdInterno),
       );
 
     await interaccion.showModal(modal);
@@ -345,27 +340,28 @@ export default class PanelDeControl extends AccionesBase {
 
     await this.api.obtenerEmbeds();
 
-    const campoColor = new TextInputBuilder()
-      .setCustomId("campo-color")
-      .setLabel("Color")
-      .setValue(`${this.api.embeds.color}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(7);
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setCustomId("campo-color")
+        .setLabel("Color")
+        .setValue(`${this.api.embeds.color}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(7),
 
-    const campoUrlImaginLimitadora = new TextInputBuilder()
-      .setCustomId("campo-url-imagen-limitadora")
-      .setLabel("URL de la imagen limitadora")
-      .setValue(`${this.api.embeds.urlImaginLimitadora}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(255);
+      new TextInputBuilder()
+        .setCustomId("campo-url-imagen-limitadora")
+        .setLabel("URL de la imagen limitadora")
+        .setValue(`${this.api.embeds.urlImaginLimitadora}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(255),
+    ];
 
     const modal = new ModalBuilder()
       .setTitle("🎟 Editar embeds")
       .setCustomId("modal-editar-embeds")
       .setComponents(
-        new ActionRowBuilder<TextInputBuilder>().setComponents(campoColor),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoUrlImaginLimitadora,
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
       );
 
@@ -419,57 +415,49 @@ export default class PanelDeControl extends AccionesBase {
 
     await this.api.obtenerCanalesDeRegistros();
 
-    const campoIdCanalMensajes = new TextInputBuilder()
-      .setCustomId("campo-id-canal-mensajes")
-      .setLabel("ID del canal de mensajes")
-      .setValue(`${this.api.canalesDeRegistros.idCanalMensajes}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+    const campos: TextInputBuilder[] = [
+      TextInputBuilder()
+        .setCustomId("campo-id-canal-mensajes")
+        .setLabel("ID del canal de mensajes")
+        .setValue(`${this.api.canalesDeRegistros.idCanalMensajes}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdCanalVoz = new TextInputBuilder()
-      .setCustomId("campo-id-canal-voz")
-      .setLabel("ID del canal de voz")
-      .setValue(`${this.api.canalesDeRegistros.idCanalVoz}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-canal-voz")
+        .setLabel("ID del canal de voz")
+        .setValue(`${this.api.canalesDeRegistros.idCanalVoz}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdCanalUsuarios = new TextInputBuilder()
-      .setCustomId("campo-id-canal-usuarios")
-      .setLabel("ID del canal de usuarios")
-      .setValue(`${this.api.canalesDeRegistros.idCanalUsuarios}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-canal-usuarios")
+        .setLabel("ID del canal de usuarios")
+        .setValue(`${this.api.canalesDeRegistros.idCanalUsuarios}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdCanalSanciones = new TextInputBuilder()
-      .setCustomId("campo-id-canal-sanciones")
-      .setLabel("ID del canal de sanciones")
-      .setValue(`${this.api.canalesDeRegistros.idCanalSanciones}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-canal-sanciones")
+        .setLabel("ID del canal de sanciones")
+        .setValue(`${this.api.canalesDeRegistros.idCanalSanciones}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
 
-    const campoIdCanlaServidor = new TextInputBuilder()
-      .setCustomId("campo-id-canal-servidor")
-      .setLabel("ID del canal de servidor")
-      .setValue(`${this.api.canalesDeRegistros.idCanalServidor}`)
-      .setStyle(TextInputStyle.Short)
-      .setMaxLength(20);
+      new TextInputBuilder()
+        .setCustomId("campo-id-canal-servidor")
+        .setLabel("ID del canal de servidor")
+        .setValue(`${this.api.canalesDeRegistros.idCanalServidor}`)
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(20),
+    ];
 
     const modal = new ModalBuilder()
       .setTitle("🎟 Editar canales de registros")
       .setCustomId("modal-editar-canales-de-registros")
       .setComponents(
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCanalMensajes,
-        ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(campoIdCanalVoz),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCanalUsuarios,
-        ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCanalSanciones,
-        ),
-        new ActionRowBuilder<TextInputBuilder>().setComponents(
-          campoIdCanlaServidor,
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
         ),
       );
 
