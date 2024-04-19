@@ -7,6 +7,10 @@ const comandos = [
     name: "panel-de-tiques",
     description: "Crea el panel de tiques",
   },
+  {
+    name: "panel-de-autoroles",
+    description: "Crea el panel de autoroles",
+  },
 ];
 
 export default comandos;

@@ -3,6 +3,7 @@ import pino from "pino";
 import AccionesBase from "./lib/AccionesBase";
 import PanelDeControl from "@interacciones/PanelDeControl";
 import PanelDeTiques from "@interacciones/PanelDeTiques";
+import PanelDeAutoroles from "@interacciones/PanelDeAutoroles";
 
 const log = pino();
 
@@ -24,4 +25,5 @@ cliente.login(token);
 cliente.on("interactionCreate", async (interaccion) => {
   PanelDeControl.manejarInteraccion(interaccion);
   PanelDeTiques.manejarInteraccion(interaccion);
+  PanelDeAutoroles.manejarInteraccion(interaccion);
 });
