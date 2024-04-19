@@ -416,7 +416,7 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.obtenerCanalesDeRegistros();
 
     const campos: TextInputBuilder[] = [
-      TextInputBuilder()
+      new TextInputBuilder()
         .setCustomId("campo-id-canal-mensajes")
         .setLabel("ID del canal de mensajes")
         .setValue(`${this.api.canalesDeRegistros.idCanalMensajes}`)
