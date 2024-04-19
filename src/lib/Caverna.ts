@@ -10,7 +10,7 @@ export default class Caverna {
   public rolesDeAdministracion: RolesDeAdministracion;
   public embeds: Embeds;
   public canalesDeRegistros: CanalesDeRegistros;
-  public autoroles: Autoroles[] = [];
+  public autoroles: Autorol[] = [];
 
   constructor(tokenApi: string) {
     this.tokenApi = tokenApi;
@@ -335,7 +335,7 @@ export default class Caverna {
     }
   }
 
-  public async actualizarAutoroles(nuevosDatos: Autoroles[]): Promise<void> {
+  public async actualizarAutoroles(nuevosDatos: Autorol[]): Promise<void> {
     const url = `${this.urlApi}/autoroles`;
 
     const respuesta = await fetch(url, {
@@ -389,7 +389,7 @@ export interface CanalesDeRegistros {
   idCanalServidor: string | null;
 }
 
-export interface Autoroles {
+export interface Autorol {
   id: string | null;
   nombre: string | null;
   emoji: string | null;
