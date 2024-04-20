@@ -64,7 +64,10 @@ export default class PanelDeControl extends AccionesBase {
         value:
           this.api.autoroles.length > 0
             ? this.api.autoroles
-                .map((rol) => `> ${rol.emoji ? rol.emoji : "⚪"} <@&${rol.id}>`)
+                .map(
+                  (rol) =>
+                    `> ${rol.emoji ? rol.emoji : "⚪"} <@&${rol.id}> - ${rol.nombre} - ${rol.tipo}`,
+                )
                 .join("\n")
             : "Nada",
       },
