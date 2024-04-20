@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/app.ts | pino-pretty",
-    "comandos": "bun src/registrarComandos.ts | pino-pretty"
+    "comandos": "bun src/registrarComandos.ts | pino-pretty",
+    "construir": "bun build src/app.ts --outdir ./build --target bun",
+    "iniciar": "bun ./build/app.js | pino-pretty"
   },
   "keywords": [
     "bot",
