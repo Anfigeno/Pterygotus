@@ -13,6 +13,5 @@ export default class NuevoMiembro extends AccionesBase {
     });
 
     miembro.roles.add(rolesDeIngreso);
-    this.log.info(miembro);
   }
 }
