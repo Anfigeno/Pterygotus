@@ -393,5 +393,5 @@ export interface Autorol {
   id: string | null;
   nombre: string | null;
   emoji: string | null;
-  tipo: "lenguaje" | "nivel" | "edad" | string | null;
+  tipo: "lenguaje" | "nivel" | "edad" | "ingreso" | string | null;
 }
