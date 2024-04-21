@@ -135,6 +135,9 @@ export default class PanelDeControl extends AccionesBase {
   public static async manejarInteraccion(
     interaccion: Interaction,
   ): Promise<void> {
+    const autor = interaccion.member as GuildMember;
+    if (!this.esAdmin(autor)) return;
+
     if (interaccion.isCommand()) {
       //
       await this.crearPanelDeControl(interaccion);
@@ -165,9 +168,6 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-tiques") return;
-
-    const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.esAdmin(autorInteraccion)) return;
 
     try {
       await this.api.obtenerTiques();
@@ -248,9 +248,6 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-roles-de-administracion") return;
-
-    const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.esAdmin(autorInteraccion)) return;
 
     await this.api.obtenerRolesDeAdministracion();
 
@@ -351,9 +348,6 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-embeds") return;
 
-    const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.esAdmin(autorInteraccion)) return;
-
     await this.api.obtenerEmbeds();
 
     const campos: TextInputBuilder[] = [
@@ -425,9 +419,6 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-canales-de-registros") return;
-
-    const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.esAdmin(autorInteraccion)) return;
 
     await this.api.obtenerCanalesDeRegistros();
 
@@ -533,16 +524,6 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-autoroles") return;
-
-    const autorInteraccion = interaccion.member as GuildMember;
-    if (!this.esAdmin(autorInteraccion)) {
-      await interaccion.reply({
-        content: "No tienes permisos para ejecutar esta interaccion",
-        ephemeral: true,
-      });
-
-      return;
-    }
 
     await this.api.obtenerAutoroles();
 
