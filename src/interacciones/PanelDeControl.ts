@@ -611,7 +611,7 @@ export default class PanelDeControl extends AccionesBase {
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
         .setLabel("Id del canal de sugerencias")
-        .setValue(this.api.canalesImportantes.idCanalSugerencias)
+        .setValue(`${this.api.canalesImportantes.idCanalSugerencias}`)
         .setStyle(TextInputStyle.Short)
         .setCustomId("campo-id-canal-de-sugerencias")
         .setRequired(true),
