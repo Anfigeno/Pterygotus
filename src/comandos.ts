@@ -11,6 +11,10 @@ const comandos = [
     name: "panel-de-autoroles",
     description: "Crea el panel de autoroles",
   },
+  {
+    name: "crear-sugerencia",
+    description: "Crea una sugerencia",
+  },
 ];
 
 export default comandos;

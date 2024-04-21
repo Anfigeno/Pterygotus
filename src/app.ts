@@ -5,6 +5,7 @@ import PanelDeControl from "@interacciones/PanelDeControl";
 import PanelDeTiques from "@interacciones/PanelDeTiques";
 import PanelDeAutoroles from "@interacciones/PanelDeAutoroles";
 import NuevoMiembro from "./eventos/NuevoMiembro";
+import Sugerencias from "@interacciones/Sugerencias";
 
 const log = pino();
 
@@ -28,6 +29,7 @@ cliente.on("interactionCreate", (interaccion) => {
   PanelDeControl.manejarInteraccion(interaccion);
   PanelDeTiques.manejarInteraccion(interaccion);
   PanelDeAutoroles.manejarInteraccion(interaccion);
+  Sugerencias.manejarInteraccion(interaccion);
 });
 
 cliente.on("guildMemberAdd", (miembro) => {

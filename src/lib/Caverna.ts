@@ -11,6 +11,7 @@ export default class Caverna {
   public embeds: Embeds;
   public canalesDeRegistros: CanalesDeRegistros;
   public autoroles: Autorol[] = [];
+  public canalesImportantes: CanalesImportantes;
 
   constructor(tokenApi: string) {
     this.tokenApi = tokenApi;
@@ -229,6 +230,43 @@ export default class Caverna {
     this.autoroles = [];
   }
 
+  public async obtenerCanalesImportantes(): Promise<void> {
+    const url = `${this.urlApi}/canales_importantes`;
+
+    const respuesta = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+    });
+
+    if (respuesta.ok) {
+      const datos = await respuesta.json();
+      this.canalesImportantes = {
+        idCanalSugerencias: datos.id_canal_sugerencias,
+      };
+
+      return;
+    }
+
+    const creacion = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+    });
+
+    if (!creacion.ok) {
+      throw new Error(await creacion.json());
+    }
+
+    this.canalesImportantes = {
+      idCanalSugerencias: null,
+    };
+  }
+
   public async actualizarTiques(nuevosDatos: Tiques): Promise<void> {
     const url = `${this.urlApi}/tiques`;
 
@@ -394,4 +432,8 @@ export interface Autorol {
   nombre: string | null;
   emoji: string | null;
   tipo: "lenguaje" | "nivel" | "edad" | "ingreso" | string | null;
+}
+
+export interface CanalesImportantes {
+  idCanalSugerencias: string | null;
 }
