@@ -33,49 +33,57 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.obtenerAutoroles();
     await this.api.obtenerCanalesImportantes();
 
+    const {
+      tiques,
+      rolesDeAdministracion,
+      embeds,
+      canalesDeRegistros,
+      autoroles,
+      canalesImportantes,
+    } = this.api;
+
     embed.setTitle("💻 Panel de control").setFields(
       {
         name: "🎟 Tiques",
-        value: `> Canal de registros: <#${this.api.tiques.idCanalDeRegistros}>
-              > Categoría: ${this.api.tiques.idCategoria}
-              > Cantidad: ${this.api.tiques.cantidad}`,
+        value: `> Canal de registros: ${tiques.idCanalDeRegistros ? `<#${tiques.idCanalDeRegistros}>` : "No definido"}
+              > Categoría: ${tiques.idCategoria ? tiques.idCategoria : "No definido"}
+              > Cantidad: ${tiques.cantidad}`,
       },
       {
         name: "👮 Roles de administracion",
-        value: `> Administrador: <@&${this.api.rolesDeAdministracion.idAdministrador}>
-              > Director: <@&${this.api.rolesDeAdministracion.idDirector}>
-              > Moderador: <@&${this.api.rolesDeAdministracion.idModerador}>
-              > Soporte: <@&${this.api.rolesDeAdministracion.idSoporte}>
-              > Interno: <@&${this.api.rolesDeAdministracion.idInterno}>`,
+        value: `> Administrador: ${rolesDeAdministracion.idAdministrador ? `<@&${rolesDeAdministracion.idAdministrador}>` : "No definido"}
+              > Director: ${rolesDeAdministracion.idDirector ? `<@&${rolesDeAdministracion.idDirector}>` : "No definido"}
+              > Moderador: ${rolesDeAdministracion.idModerador ? `<@&${rolesDeAdministracion.idModerador}>` : "No definido"}
+              > Soporte: ${rolesDeAdministracion.idSoporte ? `<@&${rolesDeAdministracion.idSoporte}>` : "No definido"}
+              > Interno: ${rolesDeAdministracion.idInterno ? `<@&${rolesDeAdministracion.idInterno}>` : "No definido"}`,
       },
       {
         name: "📝 Embeds",
-        value: `> Color: ${this.api.embeds.color}
-              > Imagen limitadora: ${this.api.embeds.urlImaginLimitadora}`,
+        value: `> Color: ${embeds.color ? embeds.color : "No definido"}
+              > Imagen limitadora: ${embeds.urlImaginLimitadora ? embeds.urlImaginLimitadora : "No definido"}`,
       },
       {
         name: "📄 Canales de registros",
-        value: `> Mensajes: <#${this.api.canalesDeRegistros.idCanalMensajes}>
-              > Voz: <#${this.api.canalesDeRegistros.idCanalVoz}>
-              > Usuarios: <#${this.api.canalesDeRegistros.idCanalUsuarios}>
-              > Sanciones: <#${this.api.canalesDeRegistros.idCanalSanciones}>
-              > Servidor: <#${this.api.canalesDeRegistros.idCanalServidor}>`,
+        value: `> Mensajes: ${canalesDeRegistros.idCanalMensajes ? `<#${canalesDeRegistros.idCanalMensajes}>` : "No definido"}
+              > Voz: ${canalesDeRegistros.idCanalVoz ? `<#${canalesDeRegistros.idCanalVoz}>` : "No definido"}
+              > Usuarios: ${canalesDeRegistros.idCanalUsuarios ? `<#${canalesDeRegistros.idCanalUsuarios}>` : "No definido"}
+              > Sanciones: ${canalesDeRegistros.idCanalSanciones ? `<#${canalesDeRegistros.idCanalSanciones}>` : "No definido"}
+              > Servidor: ${canalesDeRegistros.idCanalServidor ? `<#${canalesDeRegistros.idCanalServidor}>` : "No definido"} `,
       },
       {
         name: "🛑 Autoroles",
         value:
-          this.api.autoroles.length > 0
-            ? this.api.autoroles
-                .map(
-                  (rol) =>
-                    `> ${rol.emoji ? rol.emoji : "⚪"} <@&${rol.id}> - ${rol.nombre} - ${rol.tipo}`,
-                )
+          autoroles.length > 0
+            ? autoroles
+                .map((autorol) => {
+                  return `> ${autorol.emoji} <@&${autorol.id}> - \`${autorol.nombre}\` - ${autorol.tipo}`;
+                })
                 .join("\n")
-            : "Nada",
+            : "No definido",
       },
       {
         name: "‼️ Canales importantes",
-        value: `> Sugerencias: <#${this.api.canalesImportantes.idCanalSugerencias}>`,
+        value: `> Sugerencias: ${canalesImportantes.idCanalSugerencias ? `<#${canalesImportantes.idCanalSugerencias}>` : "No definido"}`,
       },
     );
 
