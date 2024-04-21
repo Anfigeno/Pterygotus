@@ -95,7 +95,7 @@ export default class Sugerencias extends AccionesBase {
     const { fields: campos, guild: servidor, user: usuario } = interaccion;
 
     const campoTituloSugerencia = campos.getTextInputValue(
-      "campo-descripcion-sugerencia",
+      "campo-titulo-sugerencia",
     );
     const campoDescripcionSugerencia = campos.getTextInputValue(
       "campo-descripcion-sugerencia",
