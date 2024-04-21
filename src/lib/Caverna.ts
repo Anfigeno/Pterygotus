@@ -398,6 +398,27 @@ export default class Caverna {
       throw new Error(await respuesta.json());
     }
   }
+
+  public async actualizarCanalesImportantes(
+    nuevosDatos: CanalesImportantes,
+  ): Promise<void> {
+    const url = `${this.urlApi}/canales_importantes`;
+
+    const respuesta = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Autorizacion: this.tokenApi,
+      },
+      body: JSON.stringify({
+        id_canal_sugerencias: nuevosDatos.idCanalSugerencias,
+      }),
+    });
+
+    if (!respuesta.ok) {
+      throw new Error(await respuesta.json());
+    }
+  }
 }
 
 export interface Tiques {

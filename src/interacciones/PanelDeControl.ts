@@ -2,6 +2,7 @@ import AccionesBase from "@lib/AccionesBase";
 import {
   Autorol,
   CanalesDeRegistros,
+  CanalesImportantes,
   Embeds,
   RolesDeAdministracion,
   Tiques,
@@ -30,6 +31,7 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.obtenerEmbeds();
     await this.api.obtenerCanalesDeRegistros();
     await this.api.obtenerAutoroles();
+    await this.api.obtenerCanalesImportantes();
 
     embed.setTitle("💻 Panel de control").setFields(
       {
@@ -70,6 +72,10 @@ export default class PanelDeControl extends AccionesBase {
                 )
                 .join("\n")
             : "Nada",
+      },
+      {
+        name: "‼️ Canales importantes",
+        value: `> Sugerencias: <#${this.api.canalesImportantes.idCanalSugerencias}>`,
       },
     );
 
@@ -115,6 +121,11 @@ export default class PanelDeControl extends AccionesBase {
               .setEmoji("🛑")
               .setLabel("Editar autoroles")
               .setValue("editar-autoroles"),
+
+            new StringSelectMenuOptionBuilder()
+              .setEmoji("‼️")
+              .setLabel("Editar canales importantes")
+              .setValue("editar-canales-importantes"),
           ),
       );
 
@@ -135,6 +146,7 @@ export default class PanelDeControl extends AccionesBase {
       await this.modalEditarEmbeds(interaccion);
       await this.modalEditarCanalesDeRegistros(interaccion);
       await this.modalEditarAutoroles(interaccion);
+      await this.modalEditarCanalesImportantes(interaccion);
       //
     } else if (interaccion.isModalSubmit()) {
       //
@@ -143,6 +155,7 @@ export default class PanelDeControl extends AccionesBase {
       await this.editarEmbeds(interaccion);
       await this.editarCanalesDeRegistros(interaccion);
       await this.editarAutoroles(interaccion);
+      await this.editarCanalesImportantes(interaccion);
       //
     }
   }
@@ -594,6 +607,75 @@ export default class PanelDeControl extends AccionesBase {
     });
 
     await interaccion.message.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+  }
+
+  private static async modalEditarCanalesImportantes(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-canales-importantes") return;
+
+    await this.api.obtenerCanalesImportantes();
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Id del canal de sugerencias")
+        .setValue(this.api.canalesImportantes.idCanalSugerencias)
+        .setStyle(TextInputStyle.Short)
+        .setCustomId("campo-id-canal-de-sugerencias")
+        .setRequired(true),
+    ];
+
+    const modal = new ModalBuilder()
+      .setCustomId("modal-editar-canales-importantes")
+      .setTitle("‼️ Editar canales importantse")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async editarCanalesImportantes(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-canales-importantes") return;
+
+    const { fields: campos, message: mensaje } = interaccion;
+
+    const nuevosDatos: CanalesImportantes = {
+      idCanalSugerencias: campos.getTextInputValue(
+        "campo-id-canal-de-sugerencias",
+      ),
+    };
+
+    try {
+      await this.api.actualizarCanalesImportantes(nuevosDatos);
+    } catch (error) {
+      await interaccion.reply({
+        content:
+          "Ocurrió un error al intentar actualizar los canales importantes",
+        ephemeral: true,
+      });
+
+      this.log.error(
+        "Ocurrió un error al intentar actualizar los canales importantes",
+      );
+      this.log.error(error);
+
+      return;
+    }
+
+    await interaccion.reply({
+      content: "Canales importantes actualizados correctamente!",
+      ephemeral: true,
+    });
+
+    await mensaje.edit({
       embeds: [await this.crearEmbedResumen()],
     });
   }
