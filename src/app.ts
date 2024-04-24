@@ -34,4 +34,5 @@ cliente.on("interactionCreate", (interaccion) => {
 
 cliente.on("guildMemberAdd", (miembro) => {
   NuevoMiembro.darRolesDeIngreso(miembro);
+  NuevoMiembro.darleLaBienvenida(miembro);
 });

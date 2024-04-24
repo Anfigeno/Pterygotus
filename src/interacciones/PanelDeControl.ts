@@ -4,6 +4,7 @@ import {
   DatosCanalesDeRegistros,
   DatosCanalesImportantes,
   DatosEmbeds,
+  DatosMensajesDelSistema,
   DatosRolesDeAdministracion,
   DatosTiques,
 } from "@lib/Caverna";
@@ -33,6 +34,7 @@ export default class PanelDeControl extends AccionesBase {
       canalesDeRegistros,
       autoroles,
       canalesImportantes,
+      mensajesDelSistema,
     } = this.api;
 
     await tiques.obtener();
@@ -41,6 +43,7 @@ export default class PanelDeControl extends AccionesBase {
     await canalesDeRegistros.obtener();
     await autoroles.obtener();
     await canalesImportantes.obtener();
+    await mensajesDelSistema.obtener();
 
     embed.setTitle("💻 Panel de control").setFields(
       {
@@ -85,6 +88,15 @@ export default class PanelDeControl extends AccionesBase {
         name: "‼️ Canales importantes",
         value: `> Sugerencias: ${canalesImportantes.idCanalSugerencias ? `<#${canalesImportantes.idCanalSugerencias}>` : "No definido"}
                 > General: ${canalesImportantes.idCanalGeneral ? `<#${canalesImportantes.idCanalGeneral}>` : "No definido"}`,
+      },
+      {
+        name: "💬 Mensajes del sistema",
+        value: `> Bienvenida:
+                  ${mensajesDelSistema.bienvenida || "No definido"}
+                > Sin permisos: 
+                  ${mensajesDelSistema.sinPermisos || "No definido"}
+                > Error interaccion: 
+                  ${mensajesDelSistema.errorInteraccion || "No definido"}`,
       },
     );
 
@@ -135,6 +147,11 @@ export default class PanelDeControl extends AccionesBase {
               .setEmoji("‼️")
               .setLabel("Editar canales importantes")
               .setValue("editar-canales-importantes"),
+
+            new StringSelectMenuOptionBuilder()
+              .setEmoji("💬")
+              .setLabel("Editar mensajes del sistema")
+              .setValue("editar-mensajes-del-sistema"),
           ),
       );
 
@@ -159,6 +176,7 @@ export default class PanelDeControl extends AccionesBase {
       await this.modalEditarCanalesDeRegistros(interaccion);
       await this.modalEditarAutoroles(interaccion);
       await this.modalEditarCanalesImportantes(interaccion);
+      await this.modalEditarMensajesDelSistema(interaccion);
       //
     } else if (interaccion.isModalSubmit()) {
       //
@@ -168,6 +186,7 @@ export default class PanelDeControl extends AccionesBase {
       await this.editarCanalesDeRegistros(interaccion);
       await this.editarAutoroles(interaccion);
       await this.editarCanalesImportantes(interaccion);
+      await this.editarMensajesDelSistema(interaccion);
       //
     }
   }
@@ -670,6 +689,88 @@ export default class PanelDeControl extends AccionesBase {
 
     await interaccion.reply({
       content: "Canales importantes actualizados correctamente!",
+      ephemeral: true,
+    });
+
+    await mensaje.edit({
+      embeds: [await this.crearEmbedResumen()],
+    });
+  }
+
+  private static async modalEditarMensajesDelSistema(
+    interaccion: StringSelectMenuInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "panel-de-control-opciones") return;
+    if (interaccion.values[0] !== "editar-mensajes-del-sistema") return;
+
+    const { mensajesDelSistema } = this.api;
+
+    await mensajesDelSistema.obtener();
+
+    const campos: TextInputBuilder[] = [
+      new TextInputBuilder()
+        .setLabel("Bienvenida")
+        .setValue(`${mensajesDelSistema.bienvenida}`)
+        .setCustomId("campo-bienvenida")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
+
+      new TextInputBuilder()
+        .setLabel("Sin permisos")
+        .setValue(`${mensajesDelSistema.sinPermisos}`)
+        .setCustomId("campo-sin-permisos")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
+
+      new TextInputBuilder()
+        .setLabel("Error interacción")
+        .setValue(`${mensajesDelSistema.errorInteraccion}`)
+        .setCustomId("campo-error-interaccion")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true),
+    ];
+
+    const modal = new ModalBuilder()
+      .setCustomId("modal-editar-mensajes-del-sistema")
+      .setTitle("💬 Editar mensajes del sistema")
+      .setComponents(
+        campos.map((campo) =>
+          new ActionRowBuilder<TextInputBuilder>().setComponents(campo),
+        ),
+      );
+
+    await interaccion.showModal(modal);
+  }
+
+  private static async editarMensajesDelSistema(
+    interaccion: ModalSubmitInteraction,
+  ): Promise<void> {
+    if (interaccion.customId !== "modal-editar-mensajes-del-sistema") return;
+
+    const contexto = "Se intento actualizar los mensajes del sistema";
+    const { fields: campos, message: mensaje } = interaccion;
+
+    const nuevosDatos: DatosMensajesDelSistema = {
+      bienvenida: campos.getTextInputValue("campo-bienvenida"),
+      sinPermisos: campos.getTextInputValue("campo-sin-permisos"),
+      errorInteraccion: campos.getTextInputValue("campo-error-interaccion"),
+    };
+
+    try {
+      await this.api.mensajesDelSistema.actualizar(nuevosDatos);
+    } catch (error) {
+      await interaccion.reply({
+        content: `${contexto}, pero ocurrió un error.`,
+        ephemeral: true,
+      });
+
+      this.log.error(`${contexto}. pero ocurrió un error: ${error}`);
+
+      return;
+    }
+
+    await interaccion.reply({
+      content: `${contexto} con exito!`,
       ephemeral: true,
     });
 

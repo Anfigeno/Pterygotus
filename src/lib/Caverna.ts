@@ -19,6 +19,7 @@ export default class Caverna extends ConstructorApi {
   public canalesDeRegistros = new CanalesDeRegistros(this.tokenApi);
   public autoroles = new Autoroles(this.tokenApi);
   public canalesImportantes = new CanalesImportantes(this.tokenApi);
+  public mensajesDelSistema = new MensajesDelSistema(this.tokenApi);
 }
 
 class Tiques extends ConstructorApi implements ManejarTablas {
@@ -354,6 +355,56 @@ class CanalesImportantes
   }
 }
 
+class MensajesDelSistema
+  extends ConstructorApi
+  implements ManejarTablas, DatosMensajesDelSistema
+{
+  public ruta = `${this.urlApi}/mensajes_del_sistema`;
+
+  public bienvenida: string;
+  public sinPermisos: string;
+  public errorInteraccion: string;
+
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los mensajes del sistema: ${error}`);
+    }
+
+    const datos: DatosMensajesDelSistemaApi = await respuesta.json();
+
+    this.bienvenida = datos.bienvenida;
+    this.sinPermisos = datos.sin_permisos;
+    this.errorInteraccion = datos.error_interaccion;
+  }
+
+  public async actualizar(nuevosDatos: DatosMensajesDelSistema): Promise<void> {
+    const nuevosDatosApi: DatosMensajesDelSistemaApi = {
+      bienvenida: nuevosDatos.bienvenida,
+      sin_permisos: nuevosDatos.sinPermisos,
+      error_interaccion: nuevosDatos.errorInteraccion,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar los mensajes del sistema: ${error}`);
+    }
+  }
+}
+
 interface ManejarTablas {
   ruta: string;
   obtener(): Promise<void>;
@@ -436,4 +487,16 @@ export type DatosCanalesImportantes = {
 type DatosCanalesImportantesApi = {
   id_canal_sugerencias: string | null;
   id_canal_general: string | null;
+};
+
+export type DatosMensajesDelSistema = {
+  bienvenida: string | null;
+  sinPermisos: string | null;
+  errorInteraccion: string | null;
+};
+
+type DatosMensajesDelSistemaApi = {
+  bienvenida: string | null;
+  sin_permisos: string | null;
+  error_interaccion: string | null;
 };
