@@ -1,5 +1,5 @@
 import AccionesBase from "@lib/AccionesBase";
-import { Autorol } from "@lib/Caverna";
+import { DatosAutorol } from "@lib/Caverna";
 import {
   ActionRowBuilder,
   CommandInteraction,
@@ -57,11 +57,11 @@ export default class PanelDeAutoroles extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
     embed.setTitle("🐘 ¿Qué lenguajes de programación dominas?");
 
-    await this.api.obtenerAutoroles();
+    await this.api.autoroles.obtener();
 
-    const autorolesValidos: Autorol[] = [];
+    const autorolesValidos: DatosAutorol[] = [];
 
-    this.api.autoroles.forEach((autorol) => {
+    this.api.autoroles.roles.forEach((autorol) => {
       if (autorol.tipo !== "lenguaje") return;
 
       autorolesValidos.push(autorol);
@@ -107,10 +107,10 @@ export default class PanelDeAutoroles extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
     embed.setTitle("🆙 ¿Qué nivel crees tener?");
 
-    await this.api.obtenerAutoroles();
-    const autorolesValidos: Autorol[] = [];
+    await this.api.autoroles.obtener();
+    const autorolesValidos: DatosAutorol[] = [];
 
-    this.api.autoroles.forEach(async (autorol) => {
+    this.api.autoroles.roles.forEach(async (autorol) => {
       if (autorol.tipo !== "nivel") return;
 
       autorolesValidos.push(autorol);
@@ -156,10 +156,10 @@ export default class PanelDeAutoroles extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
     embed.setTitle("👶 ¿Qué edad tienes?");
 
-    await this.api.obtenerAutoroles();
-    const autorolesValidos: Autorol[] = [];
+    await this.api.autoroles.obtener();
+    const autorolesValidos: DatosAutorol[] = [];
 
-    this.api.autoroles.forEach(async (autorol) => {
+    this.api.autoroles.roles.forEach(async (autorol) => {
       if (autorol.tipo !== "edad") return;
 
       autorolesValidos.push(autorol);
@@ -211,8 +211,8 @@ export default class PanelDeAutoroles extends AccionesBase {
     );
     const idAutorolesQueDar: string[] = [];
 
-    await this.api.obtenerAutoroles();
-    this.api.autoroles.forEach((autorol) =>
+    await this.api.autoroles.obtener();
+    this.api.autoroles.roles.forEach((autorol) =>
       nombresAutorolesQueDar.forEach((nombreAutorol) => {
         if (autorol.nombre === nombreAutorol) {
           idAutorolesQueDar.push(autorol.id);
@@ -252,8 +252,8 @@ export default class PanelDeAutoroles extends AccionesBase {
     const nombreAutorolQueDar: string = valores[0].slice(14);
     let idAutorolQueDar: string;
 
-    await this.api.obtenerAutoroles();
-    this.api.autoroles.forEach((autorol) => {
+    await this.api.autoroles.obtener();
+    this.api.autoroles.roles.forEach((autorol) => {
       if (autorol.nombre === nombreAutorolQueDar) {
         idAutorolQueDar = autorol.id;
         return;
@@ -292,8 +292,8 @@ export default class PanelDeAutoroles extends AccionesBase {
     const nombreAutorolQueDar: string = valores[0].slice(13);
     let idAutorolQueDar: string;
 
-    await this.api.obtenerAutoroles();
-    this.api.autoroles.forEach((autorol) => {
+    await this.api.autoroles.obtener();
+    this.api.autoroles.roles.forEach((autorol) => {
       if (autorol.nombre === nombreAutorolQueDar) {
         idAutorolQueDar = autorol.id;
       }

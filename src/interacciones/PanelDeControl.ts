@@ -1,7 +1,7 @@
 import AccionesBase from "@lib/AccionesBase";
 import {
-  Autorol,
-  CanalesDeRegistros,
+  DatosAutorol,
+  DatosCanalesDeRegistros,
   CanalesImportantes,
   DatosEmbeds,
   DatosRolesDeAdministracion,
@@ -29,8 +29,8 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.tiques.obtener();
     await this.api.rolesDeAdministracion.obtener();
     await this.api.embeds.obtener();
-    await this.api.obtenerCanalesDeRegistros();
-    await this.api.obtenerAutoroles();
+    await this.api.canalesDeRegistros.obtener();
+    await this.api.autoroles.obtener();
     await this.api.obtenerCanalesImportantes();
 
     const {
@@ -73,8 +73,8 @@ export default class PanelDeControl extends AccionesBase {
       {
         name: "🛑 Autoroles",
         value:
-          autoroles.length > 0
-            ? autoroles
+          autoroles.roles.length > 0
+            ? autoroles.roles
                 .map((autorol) => {
                   return `> ${autorol.emoji} <@&${autorol.id}> - \`${autorol.nombre}\` - ${autorol.tipo}`;
                 })
@@ -428,7 +428,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-canales-de-registros") return;
 
-    await this.api.obtenerCanalesDeRegistros();
+    await this.api.canalesDeRegistros.obtener();
 
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
@@ -484,7 +484,7 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-canales-de-registros") return;
 
-    const nuevosDatos: CanalesDeRegistros = {
+    const nuevosDatos: DatosCanalesDeRegistros = {
       idCanalMensajes: interaccion.fields.getTextInputValue(
         "campo-id-canal-mensajes",
       ),
@@ -501,7 +501,7 @@ export default class PanelDeControl extends AccionesBase {
     };
 
     try {
-      await this.api.actualizarCanalesDeRegistros(nuevosDatos);
+      await this.api.canalesDeRegistros.actualizar(nuevosDatos);
     } catch (error) {
       interaccion.reply({
         content:
@@ -533,12 +533,12 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-autoroles") return;
 
-    await this.api.obtenerAutoroles();
+    await this.api.autoroles.obtener();
 
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
         .setLabel("Autoroles")
-        .setValue(JSON.stringify(this.api.autoroles))
+        .setValue(JSON.stringify(this.api.autoroles.roles))
         .setCustomId("campo-autoroles")
         .setStyle(TextInputStyle.Paragraph)
         .setRequired(true),
@@ -563,7 +563,7 @@ export default class PanelDeControl extends AccionesBase {
 
     const campoAutoroles =
       interaccion.fields.getTextInputValue("campo-autoroles");
-    let nuevosDatos: Autorol[] = [];
+    let nuevosDatos: DatosAutorol[] = [];
 
     try {
       nuevosDatos = JSON.parse(campoAutoroles);
@@ -577,7 +577,7 @@ export default class PanelDeControl extends AccionesBase {
     }
 
     try {
-      await this.api.actualizarAutoroles(nuevosDatos);
+      await this.api.autoroles.actualizar(nuevosDatos);
     } catch (error) {
       await interaccion.reply({
         content: "Ocurrió un error al intentar actualizar los autoroles",

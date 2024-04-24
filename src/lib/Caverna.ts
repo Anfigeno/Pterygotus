@@ -16,94 +16,9 @@ export default class Caverna extends ConstructorApi {
   public tiques = new Tiques(this.tokenApi);
   public rolesDeAdministracion = new RolesDeAdministracion(this.tokenApi);
   public embeds = new Embeds(this.tokenApi);
-  public canalesDeRegistros: CanalesDeRegistros;
-  public autoroles: Autorol[] = [];
+  public canalesDeRegistros = new CanalesDeRegistros(this.tokenApi);
+  public autoroles = new Autoroles(this.tokenApi);
   public canalesImportantes: CanalesImportantes;
-
-  public async obtenerCanalesDeRegistros(): Promise<void> {
-    const url = `${this.urlApi}/canales_registros`;
-
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-
-      this.canalesDeRegistros = {
-        idCanalMensajes: datos.id_canal_mensajes,
-        idCanalVoz: datos.id_canal_voz,
-        idCanalUsuarios: datos.id_canal_usuarios,
-        idCanalSanciones: datos.id_canal_sanciones,
-        idCanalServidor: datos.id_canal_servidor,
-      };
-
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(JSON.stringify(await creacion.json()));
-    }
-
-    this.canalesDeRegistros = {
-      idCanalMensajes: null,
-      idCanalVoz: null,
-      idCanalUsuarios: null,
-      idCanalSanciones: null,
-      idCanalServidor: null,
-    };
-  }
-
-  public async obtenerAutoroles(): Promise<void> {
-    const url = `${this.urlApi}/autoroles`;
-
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-      this.autoroles = datos.map((dato) => {
-        return {
-          id: dato.id_rol,
-          nombre: dato.nombre,
-          emoji: dato.emoji,
-          tipo: dato.tipo,
-        };
-      });
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(await creacion.json());
-    }
-
-    this.autoroles = [];
-  }
 
   public async obtenerCanalesImportantes(): Promise<void> {
     const url = `${this.urlApi}/canales_importantes`;
@@ -140,57 +55,6 @@ export default class Caverna extends ConstructorApi {
     this.canalesImportantes = {
       idCanalSugerencias: null,
     };
-  }
-
-  public async actualizarCanalesDeRegistros(
-    nuevosDatos: CanalesDeRegistros,
-  ): Promise<void> {
-    const url = `${this.urlApi}/canales_registros`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      body: JSON.stringify({
-        id_canal_mensajes: nuevosDatos.idCanalMensajes,
-        id_canal_voz: nuevosDatos.idCanalVoz,
-        id_canal_usuarios: nuevosDatos.idCanalUsuarios,
-        id_canal_sanciones: nuevosDatos.idCanalSanciones,
-        id_canal_servidor: nuevosDatos.idCanalServidor,
-      }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(JSON.stringify(await respuesta.json()));
-    }
-  }
-
-  public async actualizarAutoroles(nuevosDatos: Autorol[]): Promise<void> {
-    const url = `${this.urlApi}/autoroles`;
-
-    const respuesta = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      method: "PUT",
-      body: JSON.stringify(
-        nuevosDatos.map((dato) => {
-          return {
-            id_rol: dato.id,
-            nombre: dato.nombre,
-            emoji: dato.emoji,
-            tipo: dato.tipo,
-          };
-        }),
-      ),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(await respuesta.json());
-    }
   }
 
   public async actualizarCanalesImportantes(
@@ -393,6 +257,114 @@ class Embeds extends ConstructorApi implements ManejarTablas, DatosEmbeds {
   }
 }
 
+class CanalesDeRegistros
+  extends ConstructorApi
+  implements ManejarTablas, DatosCanalesDeRegistros
+{
+  public ruta = `${this.urlApi}/canales_registros`;
+
+  public idCanalMensajes: string;
+  public idCanalVoz: string;
+  public idCanalUsuarios: string;
+  public idCanalSanciones: string;
+  public idCanalServidor: string;
+
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los canales de registros: ${error}`);
+    }
+
+    const datos: DatosCanalesDeRegistrosApi = await respuesta.json();
+
+    this.idCanalUsuarios = datos.id_canal_usuarios;
+    this.idCanalVoz = datos.id_canal_voz;
+    this.idCanalMensajes = datos.id_canal_mensajes;
+    this.idCanalSanciones = datos.id_canal_sanciones;
+    this.idCanalServidor = datos.id_canal_servidor;
+  }
+
+  public async actualizar(nuevosDatos: DatosCanalesDeRegistros): Promise<void> {
+    const nuevosDatosApi: DatosCanalesDeRegistrosApi = {
+      id_canal_usuarios: nuevosDatos.idCanalUsuarios,
+      id_canal_voz: nuevosDatos.idCanalVoz,
+      id_canal_mensajes: nuevosDatos.idCanalMensajes,
+      id_canal_sanciones: nuevosDatos.idCanalSanciones,
+      id_canal_servidor: nuevosDatos.idCanalServidor,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar lo canales de registros: ${error}`);
+    }
+  }
+}
+
+class Autoroles extends ConstructorApi implements ManejarTablas {
+  public ruta = `${this.urlApi}/autoroles`;
+  public roles: DatosAutorol[] = [];
+
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los autoroles: ${error}`);
+    }
+
+    const datos: DatosAutorolApi[] = await respuesta.json();
+
+    this.roles = datos.map((dato) => {
+      return {
+        id: dato.id_rol,
+        nombre: dato.nombre,
+        emoji: dato.emoji,
+        tipo: dato.tipo,
+      };
+    });
+  }
+
+  public async actualizar(nuevosDatos: DatosAutorol[]): Promise<void> {
+    const nuevosDatosApi: DatosAutorolApi[] = nuevosDatos.map((dato) => {
+      return {
+        id_rol: dato.id,
+        nombre: dato.nombre,
+        tipo: dato.tipo,
+        emoji: dato.emoji,
+      };
+    });
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar los autoroles: ${error}`);
+    }
+  }
+}
+
 interface ManejarTablas {
   ruta: string;
   obtener(): Promise<void>;
@@ -437,20 +409,35 @@ type DatosEmbedsApi = {
   url_imagen_limitadora: string | null;
 };
 
-export interface CanalesDeRegistros {
+export type DatosCanalesDeRegistros = {
   idCanalMensajes: string | null;
   idCanalVoz: string | null;
   idCanalUsuarios: string | null;
   idCanalSanciones: string | null;
   idCanalServidor: string | null;
-}
+};
 
-export interface Autorol {
+type DatosCanalesDeRegistrosApi = {
+  id_canal_mensajes: string | null;
+  id_canal_voz: string | null;
+  id_canal_usuarios: string | null;
+  id_canal_sanciones: string | null;
+  id_canal_servidor: string | null;
+};
+
+export type DatosAutorol = {
   id: string | null;
   nombre: string | null;
   emoji: string | null;
   tipo: "lenguaje" | "nivel" | "edad" | "ingreso" | string | null;
-}
+};
+
+type DatosAutorolApi = {
+  id_rol: string | null;
+  nombre: string | null;
+  emoji: string | null;
+  tipo: string | null;
+};
 
 export interface CanalesImportantes {
   idCanalSugerencias: string | null;
