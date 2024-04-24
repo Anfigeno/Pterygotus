@@ -5,8 +5,8 @@ export default class NuevoMiembro extends AccionesBase {
   public static async darRolesDeIngreso(miembro: GuildMember): Promise<void> {
     const rolesDeIngreso: string[] = [];
 
-    await this.api.obtenerAutoroles();
-    this.api.autoroles.forEach((autorol) => {
+    await this.api.autoroles.obtener();
+    this.api.autoroles.roles.forEach((autorol) => {
       if (autorol.tipo !== "ingreso") return;
 
       rolesDeIngreso.push(autorol.id);
