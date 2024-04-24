@@ -2,7 +2,7 @@ import AccionesBase from "@lib/AccionesBase";
 import {
   DatosAutorol,
   DatosCanalesDeRegistros,
-  CanalesImportantes,
+  DatosCanalesImportantes,
   DatosEmbeds,
   DatosRolesDeAdministracion,
   DatosTiques,
@@ -31,7 +31,7 @@ export default class PanelDeControl extends AccionesBase {
     await this.api.embeds.obtener();
     await this.api.canalesDeRegistros.obtener();
     await this.api.autoroles.obtener();
-    await this.api.obtenerCanalesImportantes();
+    await this.api.canalesImportantes.obtener();
 
     const {
       tiques,
@@ -83,7 +83,8 @@ export default class PanelDeControl extends AccionesBase {
       },
       {
         name: "‼️ Canales importantes",
-        value: `> Sugerencias: ${canalesImportantes.idCanalSugerencias ? `<#${canalesImportantes.idCanalSugerencias}>` : "No definido"}`,
+        value: `> Sugerencias: ${canalesImportantes.idCanalSugerencias ? `<#${canalesImportantes.idCanalSugerencias}>` : "No definido"}
+                > General: ${canalesImportantes.idCanalGeneral ? `<#${canalesImportantes.idCanalGeneral}>` : "No definido"}`,
       },
     );
 
@@ -606,7 +607,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-canales-importantes") return;
 
-    await this.api.obtenerCanalesImportantes();
+    await this.api.canalesImportantes.obtener();
 
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
@@ -614,6 +615,13 @@ export default class PanelDeControl extends AccionesBase {
         .setValue(`${this.api.canalesImportantes.idCanalSugerencias}`)
         .setStyle(TextInputStyle.Short)
         .setCustomId("campo-id-canal-de-sugerencias")
+        .setRequired(true),
+
+      new TextInputBuilder()
+        .setLabel("Id del canal general")
+        .setValue(`${this.api.canalesImportantes.idCanalGeneral}`)
+        .setStyle(TextInputStyle.Short)
+        .setCustomId("campo-id-canal-general")
         .setRequired(true),
     ];
 
@@ -636,14 +644,15 @@ export default class PanelDeControl extends AccionesBase {
 
     const { fields: campos, message: mensaje } = interaccion;
 
-    const nuevosDatos: CanalesImportantes = {
+    const nuevosDatos: DatosCanalesImportantes = {
       idCanalSugerencias: campos.getTextInputValue(
         "campo-id-canal-de-sugerencias",
       ),
+      idCanalGeneral: campos.getTextInputValue("campo-id-canal-general"),
     };
 
     try {
-      await this.api.actualizarCanalesImportantes(nuevosDatos);
+      await this.api.canalesImportantes.actualizar(nuevosDatos);
     } catch (error) {
       await interaccion.reply({
         content:

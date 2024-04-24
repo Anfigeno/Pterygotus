@@ -18,65 +18,7 @@ export default class Caverna extends ConstructorApi {
   public embeds = new Embeds(this.tokenApi);
   public canalesDeRegistros = new CanalesDeRegistros(this.tokenApi);
   public autoroles = new Autoroles(this.tokenApi);
-  public canalesImportantes: CanalesImportantes;
-
-  public async obtenerCanalesImportantes(): Promise<void> {
-    const url = `${this.urlApi}/canales_importantes`;
-
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-      this.canalesImportantes = {
-        idCanalSugerencias: datos.id_canal_sugerencias,
-      };
-
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(await creacion.json());
-    }
-
-    this.canalesImportantes = {
-      idCanalSugerencias: null,
-    };
-  }
-
-  public async actualizarCanalesImportantes(
-    nuevosDatos: CanalesImportantes,
-  ): Promise<void> {
-    const url = `${this.urlApi}/canales_importantes`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      body: JSON.stringify({
-        id_canal_sugerencias: nuevosDatos.idCanalSugerencias,
-      }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(await respuesta.json());
-    }
-  }
+  public canalesImportantes = new CanalesImportantes(this.tokenApi);
 }
 
 class Tiques extends ConstructorApi implements ManejarTablas {
@@ -365,6 +307,53 @@ class Autoroles extends ConstructorApi implements ManejarTablas {
   }
 }
 
+class CanalesImportantes
+  extends ConstructorApi
+  implements ManejarTablas, DatosCanalesImportantes
+{
+  public ruta = `${this.urlApi}/canales_importantes`;
+
+  public idCanalSugerencias: string;
+  public idCanalGeneral: string;
+
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los canales importantes: ${error}`);
+    }
+
+    const datos: DatosCanalesImportantesApi = await respuesta.json();
+
+    this.idCanalSugerencias = datos.id_canal_sugerencias;
+    this.idCanalGeneral = datos.id_canal_general;
+  }
+
+  public async actualizar(nuevosDatos: DatosCanalesImportantes): Promise<void> {
+    const nuevosDatosApi: DatosCanalesImportantesApi = {
+      id_canal_sugerencias: nuevosDatos.idCanalSugerencias,
+      id_canal_general: nuevosDatos.idCanalGeneral,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar los canales importantes: ${error}`);
+    }
+  }
+}
+
 interface ManejarTablas {
   ruta: string;
   obtener(): Promise<void>;
@@ -439,6 +428,12 @@ type DatosAutorolApi = {
   tipo: string | null;
 };
 
-export interface CanalesImportantes {
+export type DatosCanalesImportantes = {
   idCanalSugerencias: string | null;
-}
+  idCanalGeneral: string | null;
+};
+
+type DatosCanalesImportantesApi = {
+  id_canal_sugerencias: string | null;
+  id_canal_general: string | null;
+};
