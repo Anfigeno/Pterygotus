@@ -3,7 +3,7 @@ import {
   Autorol,
   CanalesDeRegistros,
   CanalesImportantes,
-  Embeds,
+  DatosEmbeds,
   DatosRolesDeAdministracion,
   DatosTiques,
 } from "@lib/Caverna";
@@ -28,7 +28,7 @@ export default class PanelDeControl extends AccionesBase {
 
     await this.api.tiques.obtener();
     await this.api.rolesDeAdministracion.obtener();
-    await this.api.obtenerEmbeds();
+    await this.api.embeds.obtener();
     await this.api.obtenerCanalesDeRegistros();
     await this.api.obtenerAutoroles();
     await this.api.obtenerCanalesImportantes();
@@ -356,7 +356,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-embeds") return;
 
-    await this.api.obtenerEmbeds();
+    await this.api.embeds.obtener();
 
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
@@ -391,7 +391,7 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-embeds") return;
 
-    const nuevosDatos: Embeds = {
+    const nuevosDatos: DatosEmbeds = {
       color: interaccion.fields.getTextInputValue("campo-color"),
       urlImaginLimitadora: interaccion.fields.getTextInputValue(
         "campo-url-imagen-limitadora",
@@ -399,7 +399,7 @@ export default class PanelDeControl extends AccionesBase {
     };
 
     try {
-      await this.api.actualizarEmbeds(nuevosDatos);
+      await this.api.embeds.actualizar(nuevosDatos);
     } catch (error) {
       interaccion.reply({
         content: "Ocurrio un error al intentar editar los embeds.",

@@ -19,7 +19,7 @@ export default class AccionesBase {
   public static async crearEmbedEstilizado(): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder();
 
-    await this.api.obtenerEmbeds();
+    await this.api.embeds.obtener();
 
     try {
       embed.setColor(this.api.embeds.color as ColorResolvable);

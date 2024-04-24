@@ -15,50 +15,10 @@ class ConstructorApi {
 export default class Caverna extends ConstructorApi {
   public tiques = new Tiques(this.tokenApi);
   public rolesDeAdministracion = new RolesDeAdministracion(this.tokenApi);
-  public embeds: Embeds;
+  public embeds = new Embeds(this.tokenApi);
   public canalesDeRegistros: CanalesDeRegistros;
   public autoroles: Autorol[] = [];
   public canalesImportantes: CanalesImportantes;
-
-  public async obtenerEmbeds(): Promise<void> {
-    const url = `${this.urlApi}/embeds`;
-
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-
-      this.embeds = {
-        color: datos.color,
-        urlImaginLimitadora: datos.url_imagen_limitadora,
-      };
-
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(JSON.stringify(await creacion.json()));
-    }
-
-    this.embeds = {
-      color: null,
-      urlImaginLimitadora: null,
-    };
-  }
 
   public async obtenerCanalesDeRegistros(): Promise<void> {
     const url = `${this.urlApi}/canales_registros`;
@@ -180,26 +140,6 @@ export default class Caverna extends ConstructorApi {
     this.canalesImportantes = {
       idCanalSugerencias: null,
     };
-  }
-
-  public async actualizarEmbeds(nuevosDatos: Embeds): Promise<void> {
-    const url = `${this.urlApi}/embeds`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      body: JSON.stringify({
-        color: nuevosDatos.color,
-        url_imagen_limitadora: nuevosDatos.urlImaginLimitadora,
-      }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(JSON.stringify(await respuesta.json()));
-    }
   }
 
   public async actualizarCanalesDeRegistros(
@@ -409,6 +349,50 @@ class RolesDeAdministracion
   }
 }
 
+class Embeds extends ConstructorApi implements ManejarTablas, DatosEmbeds {
+  public ruta = `${this.urlApi}/embeds`;
+
+  public color: string;
+  public urlImaginLimitadora: string;
+
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los embeds: ${error}`);
+    }
+
+    const datos: DatosEmbedsApi = await respuesta.json();
+
+    this.color = datos.color;
+    this.urlImaginLimitadora = datos.url_imagen_limitadora;
+  }
+
+  public async actualizar(nuevosDatos: DatosEmbeds): Promise<void> {
+    const nuevosDatosApi: DatosEmbedsApi = {
+      color: nuevosDatos.color,
+      url_imagen_limitadora: nuevosDatos.urlImaginLimitadora,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar los embeds: ${error}`);
+    }
+  }
+}
+
 interface ManejarTablas {
   ruta: string;
   obtener(): Promise<void>;
@@ -443,10 +427,15 @@ type DatosRolesDeAdministracionApi = {
   id_interno: string | null;
 };
 
-export interface Embeds {
+export type DatosEmbeds = {
   color: string | null;
   urlImaginLimitadora: string | null;
-}
+};
+
+type DatosEmbedsApi = {
+  color: string | null;
+  url_imagen_limitadora: string | null;
+};
 
 export interface CanalesDeRegistros {
   idCanalMensajes: string | null;
