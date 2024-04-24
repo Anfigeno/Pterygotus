@@ -266,7 +266,7 @@ export default class PanelDeTiques extends AccionesBase {
       return;
     }
 
-    await this.api.obtenerTiques();
+    await this.api.tiques.obtener();
 
     const cantidadTiques = this.api.tiques.cantidad;
     const idCategoriaTiques = this.api.tiques.idCategoria;
@@ -733,7 +733,7 @@ export default class PanelDeTiques extends AccionesBase {
     servidor: Guild,
     canalTique: GuildTextBasedChannel,
   ): Promise<TextBasedChannel> {
-    await this.api.obtenerTiques();
+    await this.api.tiques.obtener();
 
     if (this.api.tiques.idCanalDeRegistros == null) {
       throw new Error(
@@ -794,7 +794,7 @@ export default class PanelDeTiques extends AccionesBase {
     }
 
     try {
-      await this.api.actualizarCantidadTiques();
+      await this.api.tiques.actualizarCantidad();
     } catch (error) {
       this.log.error(
         "Ocurrió un error al intentar actualizar la cantidad de tiques",

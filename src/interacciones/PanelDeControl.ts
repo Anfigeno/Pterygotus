@@ -5,7 +5,7 @@ import {
   CanalesImportantes,
   Embeds,
   RolesDeAdministracion,
-  Tiques,
+  DatosTiques,
 } from "@lib/Caverna";
 import {
   ActionRowBuilder,
@@ -26,7 +26,7 @@ export default class PanelDeControl extends AccionesBase {
   private static async crearEmbedResumen(): Promise<EmbedBuilder> {
     const embed = await this.crearEmbedEstilizado();
 
-    await this.api.obtenerTiques();
+    await this.api.tiques.obtener();
     await this.api.obtenerRolesDeAdministracion();
     await this.api.obtenerEmbeds();
     await this.api.obtenerCanalesDeRegistros();
@@ -178,7 +178,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.values[0] !== "editar-tiques") return;
 
     try {
-      await this.api.obtenerTiques();
+      await this.api.tiques.obtener();
     } catch (error) {
       interaccion.reply({
         content: "Ocurrió un error al ejecutar este comando.",
@@ -221,7 +221,7 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-tiques") return;
 
-    const nuevosDatos: Tiques = {
+    const nuevosDatos: DatosTiques = {
       idCanalDeRegistros: interaccion.fields.getTextInputValue(
         "campo-id-canal-de-registros",
       ),
@@ -230,7 +230,7 @@ export default class PanelDeControl extends AccionesBase {
     };
 
     try {
-      await this.api.actualizarTiques(nuevosDatos);
+      await this.api.tiques.actualizar(nuevosDatos);
     } catch (error) {
       interaccion.reply({
         content: "Ocurrió un error al intentar editar los tiques.",

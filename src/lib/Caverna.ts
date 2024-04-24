@@ -1,63 +1,24 @@
-import pino from "pino";
-
-export default class Caverna {
-  private readonly urlApi = "http://0.0.0.0:8000/api";
-  protected readonly log = pino();
-
-  private readonly tokenApi: string;
-
-  public tiques: Tiques;
-  public rolesDeAdministracion: RolesDeAdministracion;
-  public embeds: Embeds;
-  public canalesDeRegistros: CanalesDeRegistros;
-  public autoroles: Autorol[] = [];
-  public canalesImportantes: CanalesImportantes;
+class ConstructorApi {
+  protected urlApi = "http://0.0.0.0:8000/api";
+  protected tokenApi: string;
 
   constructor(tokenApi: string) {
     this.tokenApi = tokenApi;
   }
 
-  public async obtenerTiques(): Promise<void> {
-    const url = `${this.urlApi}/tiques`;
+  protected headers = {
+    "Content-Type": "application/json",
+    Autorizacion: this.tokenApi,
+  };
+}
 
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-
-      this.tiques = {
-        idCanalDeRegistros: datos.id_canal_registros,
-        idCategoria: datos.id_categoria,
-        cantidad: datos.cantidad,
-      };
-
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(JSON.stringify(await creacion.json()));
-    }
-
-    this.tiques = {
-      idCanalDeRegistros: null,
-      idCategoria: null,
-      cantidad: null,
-    };
-  }
+export default class Caverna extends ConstructorApi {
+  public tiques = new Tiques(this.tokenApi);
+  public rolesDeAdministracion: RolesDeAdministracion;
+  public embeds: Embeds;
+  public canalesDeRegistros: CanalesDeRegistros;
+  public autoroles: Autorol[] = [];
+  public canalesImportantes: CanalesImportantes;
 
   public async obtenerRolesDeAdministracion(): Promise<void> {
     const url = `${this.urlApi}/roles_administracion`;
@@ -267,42 +228,6 @@ export default class Caverna {
     };
   }
 
-  public async actualizarTiques(nuevosDatos: Tiques): Promise<void> {
-    const url = `${this.urlApi}/tiques`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      body: JSON.stringify({
-        id_canal_registros: nuevosDatos.idCanalDeRegistros,
-        id_categoria: nuevosDatos.idCategoria,
-      }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(JSON.stringify(await respuesta.json()));
-    }
-  }
-
-  public async actualizarCantidadTiques(): Promise<void> {
-    const url = `${this.urlApi}/tiques/cantidad`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(JSON.stringify(await respuesta.json()));
-    }
-  }
-
   public async actualizarRolesDeAdministracion(
     nuevosDatos: RolesDeAdministracion,
   ): Promise<void> {
@@ -421,11 +346,91 @@ export default class Caverna {
   }
 }
 
-export interface Tiques {
+class Tiques extends ConstructorApi implements ManejarTablas {
+  private ruta = `${this.urlApi}/tiques`;
+
+  public idCanalDeRegistros: string;
+  public idCategoria: string;
+  public cantidad: number;
+
+  /*
+   * Hace una petición GET a la api y rellena los datos con esa información
+   * */
+  public async obtener(): Promise<this> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(
+        `Error al obtener la información de los tiques: ${error}`,
+      );
+    }
+
+    const datos: DatosTiquesApi = await respuesta.json();
+
+    this.idCanalDeRegistros = datos.id_canal_registros;
+    this.idCategoria = datos.id_categoria;
+    this.cantidad = parseInt(datos.cantidad);
+    return this;
+  }
+
+  public async actualizar(nuevosDatos: DatosTiques): Promise<void> {
+    const nuevosDatosApi: DatosTiquesApi = {
+      id_canal_registros: nuevosDatos.idCanalDeRegistros,
+      id_categoria: nuevosDatos.idCategoria,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`
+        Error al actualizar la información de los tiques: ${error}
+      `);
+    }
+  }
+
+  public async actualizarCantidad(): Promise<void> {
+    const respuesta = await fetch(`${this.ruta}/cantidad`, {
+      method: "PUT",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al actualizar la cantidad de tiques: ${error}`);
+    }
+
+    this.cantidad += 1;
+  }
+}
+
+interface ManejarTablas {
+  obtener(): Promise<void | this>;
+  actualizar(nuevosDatos: any): Promise<void>;
+}
+
+export type DatosTiques = {
   idCanalDeRegistros: string | null;
   idCategoria: string | null;
   cantidad: number | null;
-}
+};
+
+export type DatosTiquesApi = {
+  id_canal_registros: string;
+  id_categoria: string;
+  cantidad?: string;
+};
 
 export interface RolesDeAdministracion {
   idAdministrador: string | null;
