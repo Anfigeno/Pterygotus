@@ -55,8 +55,14 @@ class Tiques extends ConstructorApi implements ManejarTablas {
 
   public async actualizar(nuevosDatos: DatosTiques): Promise<void> {
     const nuevosDatosApi: DatosTiquesApi = {
-      id_canal_registros: nuevosDatos.idCanalDeRegistros,
-      id_categoria: nuevosDatos.idCategoria,
+      id_canal_registros:
+        nuevosDatos.idCanalDeRegistros !== "null"
+          ? nuevosDatos.idCanalDeRegistros
+          : undefined,
+      id_categoria:
+        nuevosDatos.idCategoria !== "null"
+          ? nuevosDatos.idCategoria
+          : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -133,11 +139,20 @@ class RolesDeAdministracion
     nuevosDatos: DatosRolesDeAdministracion,
   ): Promise<void> {
     const nuevosDatosApi: DatosRolesDeAdministracionApi = {
-      id_administrador: nuevosDatos.idAdministrador,
-      id_director: nuevosDatos.idDirector,
-      id_moderador: nuevosDatos.idModerador,
-      id_soporte: nuevosDatos.idSoporte,
-      id_interno: nuevosDatos.idInterno,
+      id_administrador:
+        nuevosDatos.idAdministrador !== "null"
+          ? nuevosDatos.idAdministrador
+          : undefined,
+      id_director:
+        nuevosDatos.idDirector !== "null" ? nuevosDatos.idDirector : undefined,
+      id_moderador:
+        nuevosDatos.idModerador !== "null"
+          ? nuevosDatos.idModerador
+          : undefined,
+      id_soporte:
+        nuevosDatos.idSoporte !== "null" ? nuevosDatos.idSoporte : undefined,
+      id_interno:
+        nuevosDatos.idInterno !== "null" ? nuevosDatos.idInterno : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -182,8 +197,11 @@ class Embeds extends ConstructorApi implements ManejarTablas, DatosEmbeds {
 
   public async actualizar(nuevosDatos: DatosEmbeds): Promise<void> {
     const nuevosDatosApi: DatosEmbedsApi = {
-      color: nuevosDatos.color,
-      url_imagen_limitadora: nuevosDatos.urlImaginLimitadora,
+      color: nuevosDatos.color !== "null" ? nuevosDatos.color : undefined,
+      url_imagen_limitadora:
+        nuevosDatos.urlImaginLimitadora !== "null"
+          ? nuevosDatos.urlImaginLimitadora
+          : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -235,11 +253,24 @@ class CanalesDeRegistros
 
   public async actualizar(nuevosDatos: DatosCanalesDeRegistros): Promise<void> {
     const nuevosDatosApi: DatosCanalesDeRegistrosApi = {
-      id_canal_usuarios: nuevosDatos.idCanalUsuarios,
-      id_canal_voz: nuevosDatos.idCanalVoz,
-      id_canal_mensajes: nuevosDatos.idCanalMensajes,
-      id_canal_sanciones: nuevosDatos.idCanalSanciones,
-      id_canal_servidor: nuevosDatos.idCanalServidor,
+      id_canal_usuarios:
+        nuevosDatos.idCanalUsuarios !== "null"
+          ? nuevosDatos.idCanalUsuarios
+          : undefined,
+      id_canal_voz:
+        nuevosDatos.idCanalVoz !== "null" ? nuevosDatos.idCanalVoz : undefined,
+      id_canal_mensajes:
+        nuevosDatos.idCanalMensajes !== "null"
+          ? nuevosDatos.idCanalMensajes
+          : undefined,
+      id_canal_sanciones:
+        nuevosDatos.idCanalSanciones !== "null"
+          ? nuevosDatos.idCanalSanciones
+          : undefined,
+      id_canal_servidor:
+        nuevosDatos.idCanalServidor !== "null"
+          ? nuevosDatos.idCanalServidor
+          : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -337,8 +368,14 @@ class CanalesImportantes
 
   public async actualizar(nuevosDatos: DatosCanalesImportantes): Promise<void> {
     const nuevosDatosApi: DatosCanalesImportantesApi = {
-      id_canal_sugerencias: nuevosDatos.idCanalSugerencias,
-      id_canal_general: nuevosDatos.idCanalGeneral,
+      id_canal_sugerencias:
+        nuevosDatos.idCanalSugerencias !== "null"
+          ? nuevosDatos.idCanalSugerencias
+          : undefined,
+      id_canal_general:
+        nuevosDatos.idCanalGeneral !== "null"
+          ? nuevosDatos.idCanalGeneral
+          : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -386,9 +423,16 @@ class MensajesDelSistema
 
   public async actualizar(nuevosDatos: DatosMensajesDelSistema): Promise<void> {
     const nuevosDatosApi: DatosMensajesDelSistemaApi = {
-      bienvenida: nuevosDatos.bienvenida,
-      sin_permisos: nuevosDatos.sinPermisos,
-      error_interaccion: nuevosDatos.errorInteraccion,
+      bienvenida:
+        nuevosDatos.bienvenida !== "null" ? nuevosDatos.bienvenida : undefined,
+      sin_permisos:
+        nuevosDatos.sinPermisos !== "null"
+          ? nuevosDatos.sinPermisos
+          : undefined,
+      error_interaccion:
+        nuevosDatos.errorInteraccion !== "null"
+          ? nuevosDatos.errorInteraccion
+          : undefined,
     };
 
     const respuesta = await fetch(this.ruta, {
@@ -418,8 +462,8 @@ export type DatosTiques = {
 };
 
 type DatosTiquesApi = {
-  id_canal_registros: string | null;
-  id_categoria: string | null;
+  id_canal_registros?: string | null;
+  id_categoria?: string | null;
   cantidad?: string | null;
 };
 
@@ -432,11 +476,11 @@ export type DatosRolesDeAdministracion = {
 };
 
 type DatosRolesDeAdministracionApi = {
-  id_administrador: string | null;
-  id_director: string | null;
-  id_moderador: string | null;
-  id_soporte: string | null;
-  id_interno: string | null;
+  id_administrador?: string | null;
+  id_director?: string | null;
+  id_moderador?: string | null;
+  id_soporte?: string | null;
+  id_interno?: string | null;
 };
 
 export type DatosEmbeds = {
@@ -445,8 +489,8 @@ export type DatosEmbeds = {
 };
 
 type DatosEmbedsApi = {
-  color: string | null;
-  url_imagen_limitadora: string | null;
+  color?: string | null;
+  url_imagen_limitadora?: string | null;
 };
 
 export type DatosCanalesDeRegistros = {
@@ -458,11 +502,11 @@ export type DatosCanalesDeRegistros = {
 };
 
 type DatosCanalesDeRegistrosApi = {
-  id_canal_mensajes: string | null;
-  id_canal_voz: string | null;
-  id_canal_usuarios: string | null;
-  id_canal_sanciones: string | null;
-  id_canal_servidor: string | null;
+  id_canal_mensajes?: string | null;
+  id_canal_voz?: string | null;
+  id_canal_usuarios?: string | null;
+  id_canal_sanciones?: string | null;
+  id_canal_servidor?: string | null;
 };
 
 export type DatosAutorol = {
@@ -485,8 +529,8 @@ export type DatosCanalesImportantes = {
 };
 
 type DatosCanalesImportantesApi = {
-  id_canal_sugerencias: string | null;
-  id_canal_general: string | null;
+  id_canal_sugerencias?: string | null;
+  id_canal_general?: string | null;
 };
 
 export type DatosMensajesDelSistema = {
@@ -496,7 +540,7 @@ export type DatosMensajesDelSistema = {
 };
 
 type DatosMensajesDelSistemaApi = {
-  bienvenida: string | null;
-  sin_permisos: string | null;
-  error_interaccion: string | null;
+  bienvenida?: string | null;
+  sin_permisos?: string | null;
+  error_interaccion?: string | null;
 };
