@@ -26,13 +26,6 @@ export default class PanelDeControl extends AccionesBase {
   private static async crearEmbedResumen(): Promise<EmbedBuilder> {
     const embed = await this.crearEmbedEstilizado();
 
-    await this.api.tiques.obtener();
-    await this.api.rolesDeAdministracion.obtener();
-    await this.api.embeds.obtener();
-    await this.api.canalesDeRegistros.obtener();
-    await this.api.autoroles.obtener();
-    await this.api.canalesImportantes.obtener();
-
     const {
       tiques,
       rolesDeAdministracion,
@@ -41,6 +34,13 @@ export default class PanelDeControl extends AccionesBase {
       autoroles,
       canalesImportantes,
     } = this.api;
+
+    await tiques.obtener();
+    await rolesDeAdministracion.obtener();
+    await embeds.obtener();
+    await canalesDeRegistros.obtener();
+    await autoroles.obtener();
+    await canalesImportantes.obtener();
 
     embed.setTitle("💻 Panel de control").setFields(
       {
