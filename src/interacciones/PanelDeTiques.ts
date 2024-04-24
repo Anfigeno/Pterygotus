@@ -251,7 +251,7 @@ export default class PanelDeTiques extends AccionesBase {
     interaccion: ModalSubmitInteraction,
     emoji: string,
   ): Promise<TextChannel | void> {
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
 
     const { guild, user } = interaccion;
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
@@ -413,7 +413,7 @@ export default class PanelDeTiques extends AccionesBase {
       this.crearBotonCerrarTique(),
     );
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
 
     await canalTique.send({
@@ -463,7 +463,7 @@ export default class PanelDeTiques extends AccionesBase {
       this.crearBotonCerrarTique(),
     );
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
 
     await canalTique.send({
@@ -504,7 +504,7 @@ export default class PanelDeTiques extends AccionesBase {
       this.crearBotonCerrarTique(),
     );
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     const idRolSoporte = this.api.rolesDeAdministracion.idSoporte;
 
     await canalTique.send({
@@ -619,7 +619,7 @@ export default class PanelDeTiques extends AccionesBase {
       member: miembro,
     } = interaccion;
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     const rolSoporteExiste = this.rolExiste(
       servidor,
       this.api.rolesDeAdministracion.idSoporte,
@@ -711,7 +711,7 @@ export default class PanelDeTiques extends AccionesBase {
       user: usuario,
     } = interaccion;
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     const autorInteraccionEsSoporte = miembro.roles.cache.has(
       this.api.rolesDeAdministracion.idSoporte,
     );

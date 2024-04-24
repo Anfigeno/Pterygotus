@@ -4,7 +4,7 @@ import {
   CanalesDeRegistros,
   CanalesImportantes,
   Embeds,
-  RolesDeAdministracion,
+  DatosRolesDeAdministracion,
   DatosTiques,
 } from "@lib/Caverna";
 import {
@@ -27,7 +27,7 @@ export default class PanelDeControl extends AccionesBase {
     const embed = await this.crearEmbedEstilizado();
 
     await this.api.tiques.obtener();
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
     await this.api.obtenerEmbeds();
     await this.api.obtenerCanalesDeRegistros();
     await this.api.obtenerAutoroles();
@@ -257,7 +257,7 @@ export default class PanelDeControl extends AccionesBase {
     if (interaccion.customId !== "panel-de-control-opciones") return;
     if (interaccion.values[0] !== "editar-roles-de-administracion") return;
 
-    await this.api.obtenerRolesDeAdministracion();
+    await this.api.rolesDeAdministracion.obtener();
 
     const campos: TextInputBuilder[] = [
       new TextInputBuilder()
@@ -313,7 +313,7 @@ export default class PanelDeControl extends AccionesBase {
   ): Promise<void> {
     if (interaccion.customId !== "modal-editar-roles-de-administracion") return;
 
-    const nuevosDatos: RolesDeAdministracion = {
+    const nuevosDatos: DatosRolesDeAdministracion = {
       idAdministrador: interaccion.fields.getTextInputValue(
         "campo-id-administrador",
       ),
@@ -324,7 +324,7 @@ export default class PanelDeControl extends AccionesBase {
     };
 
     try {
-      await this.api.actualizarRolesDeAdministracion(nuevosDatos);
+      await this.api.rolesDeAdministracion.actualizar(nuevosDatos);
     } catch (error) {
       interaccion.reply({
         content:

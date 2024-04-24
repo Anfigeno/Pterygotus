@@ -14,57 +14,11 @@ class ConstructorApi {
 
 export default class Caverna extends ConstructorApi {
   public tiques = new Tiques(this.tokenApi);
-  public rolesDeAdministracion: RolesDeAdministracion;
+  public rolesDeAdministracion = new RolesDeAdministracion(this.tokenApi);
   public embeds: Embeds;
   public canalesDeRegistros: CanalesDeRegistros;
   public autoroles: Autorol[] = [];
   public canalesImportantes: CanalesImportantes;
-
-  public async obtenerRolesDeAdministracion(): Promise<void> {
-    const url = `${this.urlApi}/roles_administracion`;
-
-    const respuesta = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (respuesta.ok) {
-      const datos = await respuesta.json();
-
-      this.rolesDeAdministracion = {
-        idAdministrador: datos.id_administrador,
-        idDirector: datos.id_director,
-        idModerador: datos.id_moderador,
-        idSoporte: datos.id_soporte,
-        idInterno: datos.id_interno,
-      };
-
-      return;
-    }
-
-    const creacion = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-    });
-
-    if (!creacion.ok) {
-      throw new Error(JSON.stringify(await creacion.json()));
-    }
-
-    this.rolesDeAdministracion = {
-      idAdministrador: null,
-      idDirector: null,
-      idModerador: null,
-      idSoporte: null,
-      idInterno: null,
-    };
-  }
 
   public async obtenerEmbeds(): Promise<void> {
     const url = `${this.urlApi}/embeds`;
@@ -228,31 +182,6 @@ export default class Caverna extends ConstructorApi {
     };
   }
 
-  public async actualizarRolesDeAdministracion(
-    nuevosDatos: RolesDeAdministracion,
-  ): Promise<void> {
-    const url = `${this.urlApi}/roles_administracion`;
-
-    const respuesta = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Autorizacion: this.tokenApi,
-      },
-      body: JSON.stringify({
-        id_administrador: nuevosDatos.idAdministrador,
-        id_director: nuevosDatos.idDirector,
-        id_moderador: nuevosDatos.idModerador,
-        id_soporte: nuevosDatos.idSoporte,
-        id_interno: nuevosDatos.idInterno,
-      }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(JSON.stringify(await respuesta.json()));
-    }
-  }
-
   public async actualizarEmbeds(nuevosDatos: Embeds): Promise<void> {
     const url = `${this.urlApi}/embeds`;
 
@@ -347,7 +276,7 @@ export default class Caverna extends ConstructorApi {
 }
 
 class Tiques extends ConstructorApi implements ManejarTablas {
-  private ruta = `${this.urlApi}/tiques`;
+  public ruta = `${this.urlApi}/tiques`;
 
   public idCanalDeRegistros: string;
   public idCategoria: string;
@@ -356,7 +285,7 @@ class Tiques extends ConstructorApi implements ManejarTablas {
   /*
    * Hace una petición GET a la api y rellena los datos con esa información
    * */
-  public async obtener(): Promise<this> {
+  public async obtener(): Promise<void> {
     const respuesta = await fetch(this.ruta, {
       method: "GET",
       headers: this.headers,
@@ -375,7 +304,6 @@ class Tiques extends ConstructorApi implements ManejarTablas {
     this.idCanalDeRegistros = datos.id_canal_registros;
     this.idCategoria = datos.id_categoria;
     this.cantidad = parseInt(datos.cantidad);
-    return this;
   }
 
   public async actualizar(nuevosDatos: DatosTiques): Promise<void> {
@@ -415,8 +343,75 @@ class Tiques extends ConstructorApi implements ManejarTablas {
   }
 }
 
+class RolesDeAdministracion
+  extends ConstructorApi
+  implements ManejarTablas, DatosRolesDeAdministracion
+{
+  public ruta = `${this.urlApi}/roles_administracion`;
+
+  public idAdministrador: string;
+  public idDirector: string;
+  public idModerador: string;
+  public idSoporte: string;
+  public idInterno: string;
+
+  /**
+   * Hace una petición GET a la api y rellena los datos con esta info
+   **/
+  public async obtener(): Promise<void> {
+    const respuesta = await fetch(this.ruta, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(`Error al obtener los roles de administración: ${error}`);
+    }
+
+    const datos: DatosRolesDeAdministracionApi = await respuesta.json();
+    this.idAdministrador = datos.id_administrador;
+    this.idDirector = datos.id_director;
+    this.idModerador = datos.id_moderador;
+    this.idSoporte = datos.id_soporte;
+    this.idInterno = datos.id_interno;
+  }
+
+  /**
+   * Actualiza los datos de la api con una petición PUT
+   * No actualiza los datos de la clase
+   **/
+  public async actualizar(
+    nuevosDatos: DatosRolesDeAdministracion,
+  ): Promise<void> {
+    const nuevosDatosApi: DatosRolesDeAdministracionApi = {
+      id_administrador: nuevosDatos.idAdministrador,
+      id_director: nuevosDatos.idDirector,
+      id_moderador: nuevosDatos.idModerador,
+      id_soporte: nuevosDatos.idSoporte,
+      id_interno: nuevosDatos.idInterno,
+    };
+
+    const respuesta = await fetch(this.ruta, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(nuevosDatosApi),
+    });
+
+    if (!respuesta.ok) {
+      const error = JSON.stringify(await respuesta.json());
+
+      throw new Error(
+        `Error al actualizar los roles de administración: ${error}`,
+      );
+    }
+  }
+}
+
 interface ManejarTablas {
-  obtener(): Promise<void | this>;
+  ruta: string;
+  obtener(): Promise<void>;
   actualizar(nuevosDatos: any): Promise<void>;
 }
 
@@ -426,19 +421,27 @@ export type DatosTiques = {
   cantidad: number | null;
 };
 
-export type DatosTiquesApi = {
-  id_canal_registros: string;
-  id_categoria: string;
-  cantidad?: string;
+type DatosTiquesApi = {
+  id_canal_registros: string | null;
+  id_categoria: string | null;
+  cantidad?: string | null;
 };
 
-export interface RolesDeAdministracion {
+export type DatosRolesDeAdministracion = {
   idAdministrador: string | null;
   idDirector: string | null;
   idModerador: string | null;
   idSoporte: string | null;
   idInterno: string | null;
-}
+};
+
+type DatosRolesDeAdministracionApi = {
+  id_administrador: string | null;
+  id_director: string | null;
+  id_moderador: string | null;
+  id_soporte: string | null;
+  id_interno: string | null;
+};
 
 export interface Embeds {
   color: string | null;
